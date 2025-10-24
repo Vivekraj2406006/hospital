@@ -6,6 +6,9 @@
 ![React](https://img.shields.io/badge/React-19.1.1-61dafb?style=for-the-badge&logo=react)
 ![Vite](https://img.shields.io/badge/Vite-6.3.1-646cff?style=for-the-badge&logo=vite)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind-4.1.4-38bdf8?style=for-the-badge&logo=tailwind-css)
+![Node.js](https://img.shields.io/badge/Node.js-Backend-339933?style=for-the-badge&logo=node.js)
+![Express](https://img.shields.io/badge/Express-5.1.0-000000?style=for-the-badge&logo=express)
+![MongoDB](https://img.shields.io/badge/MongoDB-Database-47A248?style=for-the-badge&logo=mongodb)
 
 **A modern, responsive website for MediCare Hospital providing comprehensive healthcare information and services**
 
@@ -24,13 +27,17 @@
   - [Prerequisites](#prerequisites)
   - [Installation](#installation)
   - [Running the Application](#running-the-application)
+- [Security Features](#security-features)
+- [API Endpoints](#api-endpoints)
 - [Project Structure](#project-structure)
 - [Available Scripts](#available-scripts)
 - [Key Components](#key-components)
+- [Troubleshooting](#troubleshooting)
 - [Customization](#customization)
 - [Contributing](#contributing)
 - [License](#license)
 - [Contact](#contact)
+- [Roadmap](#roadmap)
 
 ---
 
