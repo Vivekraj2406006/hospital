@@ -11,13 +11,13 @@ const Footer = () => {
           <div className="md:col-span-2">
             <a href="#" className="text-3xl font-bold text-white flex items-center mb-4">
               <Hospital className="w-8 h-8 mr-2" />
-              MediCare
+              SR EMERGENCY
             </a>
             <p className="max-w-md">
               Dedicated to providing the highest quality of healthcare in a compassionate and comfortable environment.
             </p>
           </div>
-          
+
           {/* Quick Links */}
           <div>
             <h4 className="text-lg font-semibold text-white mb-4">Quick Links</h4>
@@ -28,7 +28,7 @@ const Footer = () => {
               <li><a href="#appointment" className="hover:text-primary-light transition">Appointments</a></li>
             </ul>
           </div>
-          
+
           {/* Contact Info */}
           <div>
             <h4 className="text-lg font-semibold text-white mb-4">Contact Us</h4>
@@ -43,16 +43,16 @@ const Footer = () => {
               </li>
               <li className="flex items-center">
                 <Mail className="w-5 h-5 mr-3 text-primary-light shrink-0" />
-                <span>info@medicare.com</span>
+                <span>info@sremergency.com</span>
               </li>
             </ul>
           </div>
         </div>
-        
+
         {/* Copyright & Socials */}
         <div className="mt-12 pt-8 border-t border-gray-700 flex flex-col md:flex-row justify-between items-center">
-          <p className="text-gray-400">&copy; 2025 MediCare Hospital. All rights reserved.</p>
-          
+          <p className="text-gray-400">&copy; 2025 SR EMERGENCY Hospital. All rights reserved.</p>
+
           {/* Social Media Icons */}
           <div className="flex space-x-4 mt-4 md:mt-0">
             <a href="#" className="text-gray-400 hover:text-primary-light"><Facebook className="w-6 h-6" /></a>
