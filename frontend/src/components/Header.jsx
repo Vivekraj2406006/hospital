@@ -1,8 +1,11 @@
-import { useState } from "react";
+import { useState, useContext } from "react";
+import { AppContext } from "../context/AppContext";
 import { Hospital, Menu } from "lucide-react";
 
 const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const { isLoggedIn, logout } = useContext(AppContext);
 
   return (
     <header className="bg-white shadow-sm sticky top-0 z-1000 ">
@@ -13,7 +16,7 @@ const Header = () => {
           className="text-3xl font-bold  flex items-center text-[#399fa8]"
         >
           <Hospital className="w-8 h-8 mr-2 " />
-          MediCare
+          SR EMERGENCY
         </a>
 
         {/* Mobile Menu Button */}
@@ -49,6 +52,16 @@ const Header = () => {
               Book Appointment
             </a>
           </li>
+          {isLoggedIn && (
+            <li>
+              <button
+                onClick={logout}
+                className="ml-4 px-5 py-2 rounded-full bg-gradient-to-r from-[#399fa8] to-[#0e9aa7] text-white font-medium shadow-md hover:from-[#0e9aa7] hover:to-[#399fa8] transition"
+              >
+                Logout
+              </button>
+            </li>
+          )}
         </ul>
       </nav>
 

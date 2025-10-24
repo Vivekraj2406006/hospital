@@ -29,20 +29,20 @@ const Appointment = () => {
   return (
     <section id="appointment" className="py-16 md:py-24 bg-primary text-onPrimary">
       <div className="container mx-auto px-6">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            Book an Appointment
-          </h2>
-          <p className="text-lg text-muted max-w-2xl mx-auto">
-            Fill out the form below to request an appointment. Our team will get
-            back to you shortly.
-          </p>
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-extrabold text-[#399fa8] mb-2 tracking-tight">
+              Book an Appointment
+            </h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              Fill out the form below to request an appointment. Our team will get
+              back to you shortly.
+            </p>
         </div>
 
         <form
           id="appointment-form"
           onSubmit={handleSubmit}
-          className="max-w-2xl mx-auto bg-surface text-fg p-8 rounded-2xl shadow-lg"
+            className="max-w-2xl mx-auto bg-white text-gray-900 p-8 rounded-3xl shadow-2xl border border-gray-100"
         >
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Full Name */}
@@ -59,7 +59,7 @@ const Appointment = () => {
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
-                className="w-full px-4 py-3 border border-outline rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:border-[#399fa8] focus:ring-2 focus:ring-[#399fa8]/20 bg-gray-50 text-gray-900 placeholder-gray-400 transition"
                 required
               />
             </div>
@@ -78,7 +78,7 @@ const Appointment = () => {
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                className="w-full px-4 py-3 border border-outline rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:border-[#399fa8] focus:ring-2 focus:ring-[#399fa8]/20 bg-gray-50 text-gray-900 placeholder-gray-400 transition"
                 required
               />
             </div>
@@ -97,7 +97,7 @@ const Appointment = () => {
                 name="phone"
                 value={formData.phone}
                 onChange={handleChange}
-                className="w-full px-4 py-3 border border-outline rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:border-[#399fa8] focus:ring-2 focus:ring-[#399fa8]/20 bg-gray-50 text-gray-900 placeholder-gray-400 transition"
                 required
               />
             </div>
@@ -115,7 +115,7 @@ const Appointment = () => {
                 name="department"
                 value={formData.department}
                 onChange={handleChange}
-                className="w-full px-4 py-3 border border-outline rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-surface"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:border-[#399fa8] focus:ring-2 focus:ring-[#399fa8]/20 bg-gray-50 text-gray-900 placeholder-gray-400 transition"
                 required
               >
                 <option value="">Select a Department</option>
@@ -141,7 +141,7 @@ const Appointment = () => {
                 name="date"
                 value={formData.date}
                 onChange={handleChange}
-                className="w-full px-4 py-3 border border-outline rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:border-[#399fa8] focus:ring-2 focus:ring-[#399fa8]/20 bg-gray-50 text-gray-900 placeholder-gray-400 transition"
                 required
               />
             </div>
@@ -160,7 +160,7 @@ const Appointment = () => {
                 rows="4"
                 value={formData.message}
                 onChange={handleChange}
-                className="w-full px-4 py-3 border border-outline rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:border-[#399fa8] focus:ring-2 focus:ring-[#399fa8]/20 bg-gray-50 text-gray-900 placeholder-gray-400 transition"
               ></textarea>
             </div>
           </div>
@@ -169,7 +169,7 @@ const Appointment = () => {
           <div className="text-center mt-8">
             <button
               type="submit"
-              className="bg-[#16cdde] text-onPrimary w-full md:w-auto px-10 py-3 rounded-full text-lg font-semibold shadow-md hover:bg-primary/90 transition"
+                className="bg-[#399fa8] w-full md:w-auto px-10 py-3 rounded-full text-lg font-semibold shadow-lg text-white hover:bg-[#2b7a78] transition"
             >
               Submit Request
             </button>

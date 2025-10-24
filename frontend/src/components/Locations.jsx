@@ -11,9 +11,9 @@ import {
 import L from "leaflet";
 
 const hospitals = [
-  { name: "MediCare Downtown", lat: 34.0522, lon: -118.2437 },
-  { name: "MediCare Westside", lat: 34.0195, lon: -118.4912 },
-  { name: "MediCare Valley", lat: 34.1808, lon: -118.4452 },
+  { name: "SR EMERGENCY Downtown", lat: 34.0522, lon: -118.2437 },
+  { name: "SR EMERGENCY Westside", lat: 34.0195, lon: -118.4912 },
+  { name: "SR EMERGENCY Valley", lat: 34.1808, lon: -118.4452 },
 ];
 
 function ChangeView({ center, bounds }) {
@@ -124,7 +124,7 @@ const Locations = () => {
             Find Our Locations
           </h2>
           <p className="text-lg text-muted max-w-2xl mx-auto">
-            Get directions to your nearest MediCare facility.
+            Get directions to your nearest SR EMERGENCY facility.
           </p>
         </div>
 
