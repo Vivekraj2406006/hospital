@@ -1,11 +1,12 @@
-// src/components/Doctors.jsx
+
+import DrVidyanandImg from "../assets/Dr.Vidyanand.jpg";
 
 const doctorsList = [
   {
-    img: "https://placehold.co/400x400/cffafe/0e7490?text=Dr.+Emily+Carter",
-    name: "Dr. Emily Carter",
+    img: "",
+    name: "Dr.Sunil Kumar ",
     specialty: "Cardiologist",
-    bio: "15+ years of experience in cardiovascular diseases and interventions."
+    bio: `MBBS(PMCH Patna) ,MD (Medicine)\nCertified cource in Diabetologist \n Ex-Resident Safadargang Hospital New Delhi\nEx-Senior-Regident Jawahar lal Nehru Medical College and Hospital Bhagalpur \n Cardiologist & Diabetologist\n Reg-No:43985`
   },
   {
     img: "https://placehold.co/400x400/cffafe/0e7490?text=Dr.+Mark+Chen",
@@ -20,10 +21,10 @@ const doctorsList = [
     bio: "Specializes in complex neurological disorders and innovative treatments."
   },
   {
-    img: "https://placehold.co/400x400/cffafe/0e7490?text=Dr.+David+Lee",
-    name: "Dr. David Lee",
+    img: DrVidyanandImg,
+    name: "Dr. Vidyanand Kumar",
     specialty: "Orthopedic Surgeon",
-    bio: "Expert in sports injuries and joint replacement surgeries."
+  bio: `MBBS , D.ORTHO DNB\nEx-Senior Resident Diamond Harbour Government Medical College\nFellowship in spine (Mumbai)\nSpecialist in Bone joint, spine and Ligament surgery`
   }
 ];
 
@@ -37,13 +38,13 @@ const Doctors = () => {
             Our specialists are leaders in their fields, dedicated to providing you with personalized care.
           </p>
         </div>
-        
+
         {/* Doctors Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
           {doctorsList.map((doc) => (
             <div key={doc.name} className="bg-white border border-gray-200 rounded-2xl shadow-lg overflow-hidden text-center">
-              <img 
-                src={doc.img} 
+              <img
+                src={doc.img}
                 alt={doc.name}
                 className="w-full h-56 object-cover"
                 onError={(e) => { e.currentTarget.src = 'https://placehold.co/400x400/e0e0e0/b0b0b0?text=Doctor+Photo'; }}
@@ -51,9 +52,11 @@ const Doctors = () => {
               <div className="p-6">
                 <h3 className="text-2xl font-semibold mb-1">{doc.name}</h3>
                 <p className="text-primary-dark font-medium text-lg">{doc.specialty}</p>
-                <p className="text-gray-600 mt-3">
-                  {doc.bio}
-                </p>
+                <div className="text-gray-600 mt-3">
+                  {doc.bio.split('\n').map((line, idx) => (
+                    <div key={idx}>{line}</div>
+                  ))}
+                </div>
               </div>
             </div>
           ))}
