@@ -4,7 +4,8 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from 'react-toastify';
 import { AppContext } from "../context/AppContext";
-import { Hospital, Mail, Lock, User, Eye, EyeOff } from "lucide-react";
+import { Mail, Lock, User, Eye, EyeOff } from "lucide-react";
+import Logo from "../assets/logo.png";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -54,7 +55,7 @@ const Login = () => {
       <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl p-8 sm:p-12 relative z-10 border border-gray-100">
         <div className="flex flex-col items-center mb-6">
           <span className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[#399fa8]/10 mb-2">
-            <Hospital className="w-10 h-10 text-[#399fa8]" />
+            <img src={Logo} alt="SR Emergency Logo" className="w-16 h-16 object-contain" />
           </span>
           <h2 className="text-3xl font-extrabold text-[#399fa8] mb-1 tracking-tight">
             {state === "Sign Up" ? "Create Account" : "Welcome Back"}

@@ -1,11 +1,15 @@
+
 import { useState, useContext } from "react";
 import { AppContext } from "../context/AppContext";
-import { Hospital, Menu } from "lucide-react";
+import { Menu } from "lucide-react";
+import Logo from "../assets/logo.png";
+import { useNavigate, Link } from "react-router-dom";
 
 const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const { isLoggedIn, logout } = useContext(AppContext);
+  const navigate = useNavigate();
 
   return (
     <header className="bg-white shadow-sm sticky top-0 z-1000 ">
@@ -15,7 +19,7 @@ const Header = () => {
           href="#"
           className="text-3xl font-bold  flex items-center text-[#399fa8]"
         >
-          <Hospital className="w-8 h-8 mr-2 " />
+          <img src={Logo} alt="SR Emergency Logo" className="w-14 h-14 mr-2" />
           SR EMERGENCY
         </a>
 
@@ -35,23 +39,52 @@ const Header = () => {
           {["Home", "Services", "Doctors", "About", "Locations", "Contact"].map(
             (item) => (
               <li key={item}>
-                <a
-                  href={`#${item.toLowerCase().replace(" ", "")}`}
-                  className="text-muted hover:text-primary font-medium transition"
+                <button
+                  className="text-muted hover:text-primary font-medium transition bg-transparent border-none cursor-pointer"
+                  onClick={() => {
+                    if (item === "Home") {
+                      navigate("/");
+                      setTimeout(() => {
+                        window.scrollTo({ top: 0, behavior: "smooth" });
+                      }, 100);
+                    } else {
+                      navigate("/");
+                      setTimeout(() => {
+                        const el = document.getElementById(item.toLowerCase().replace(" ", ""));
+                        if (el) el.scrollIntoView({ behavior: "smooth" });
+                      }, 100);
+                    }
+                  }}
                 >
                   {item}
-                </a>
+                </button>
               </li>
             )
           )}
           <li>
-            <a
-              href="#appointment"
+            <button
               className="bg-[#10b7c6] text-white px-5 py-2 rounded-full font-medium shadow-md hover:bg-primary/90 transition"
+              onClick={() => {
+                navigate("/");
+                setTimeout(() => {
+                  const el = document.getElementById("appointment");
+                  if (el) el.scrollIntoView({ behavior: "smooth" });
+                }, 100);
+              }}
             >
               Book Appointment
-            </a>
+            </button>
           </li>
+          {!isLoggedIn && (
+            <li>
+              <Link
+                to="/login"
+                className="ml-4 px-5 py-2 rounded-full bg-gradient-to-r from-[#399fa8] to-[#0e9aa7] text-white font-medium shadow-md hover:from-[#0e9aa7] hover:to-[#399fa8] transition"
+              >
+                Login
+              </Link>
+            </li>
+          )}
           {isLoggedIn && (
             <li>
               <button
@@ -72,13 +105,26 @@ const Header = () => {
       >
         {["Home", "Services", "Doctors", "About Us", "Locations", "Contact"].map(
           (item) => (
-            <a
+            <button
               key={item}
-              href={`#${item.toLowerCase().replace(" ", "")}`}
-              className="block text-muted hover:text-primary font-medium transition"
+              className="block text-muted hover:text-primary font-medium transition bg-transparent border-none cursor-pointer w-full text-left"
+              onClick={() => {
+                if (item === "Home") {
+                  navigate("/");
+                  setTimeout(() => {
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                  }, 100);
+                } else {
+                  navigate("/");
+                  setTimeout(() => {
+                    const el = document.getElementById(item.toLowerCase().replace(" ", ""));
+                    if (el) el.scrollIntoView({ behavior: "smooth" });
+                  }, 100);
+                }
+              }}
             >
               {item}
-            </a>
+            </button>
           )
         )}
         <a

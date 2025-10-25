@@ -1,3 +1,4 @@
+import Logo from "../assets/logo.png";
 import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -31,10 +32,7 @@ const EmailVerify = () => {
       <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl p-8 sm:p-12 relative z-10 border border-gray-100">
         <div className="flex flex-col items-center mb-6">
           <span className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[#399fa8]/10 mb-2">
-            {/* You can add a hospital icon here if available */}
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="#399fa8" className="w-10 h-10">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-            </svg>
+            <img src={Logo} alt="SR Emergency Logo" className="w-16 h-16 object-contain" />
           </span>
           <h2 className="text-3xl font-extrabold text-[#399fa8] mb-1 tracking-tight">Verify Email</h2>
           <p className="text-gray-500 text-center text-base">We have sent an OTP to your email. Please enter it below to verify your account.</p>

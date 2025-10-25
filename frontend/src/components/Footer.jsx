@@ -1,6 +1,7 @@
 // src/components/Footer.jsx
 
-import { Hospital, MapPin, Phone, Mail, Facebook, Twitter, Instagram, Linkedin } from 'lucide-react';
+import { MapPin, Phone, Mail, Facebook, Twitter, Instagram, Linkedin } from 'lucide-react';
+import Logo from "../assets/logo.png";
 
 const Footer = () => {
   return (
@@ -10,7 +11,7 @@ const Footer = () => {
           {/* About */}
           <div className="md:col-span-2">
             <a href="#" className="text-3xl font-bold text-white flex items-center mb-4">
-              <Hospital className="w-8 h-8 mr-2" />
+              <img src={Logo} alt="SR Emergency Logo" className="w-14 h-14 mr-2" />
               SR EMERGENCY
             </a>
             <p className="max-w-md">

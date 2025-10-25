@@ -13,17 +13,19 @@ import Login from './pages/Login';
 import EmailVerify from './pages/EmailVerify';
 import ResetPassword from './pages/ResetPassword';
 import ProtectedRoute from './components/ProtectedRoute';
+import ScrollToTop from './components/ScrollToTop';
 
 function App() {
   return (
     <div className="font-sans antialiased text-gray-800">
       <Header />
+      <ScrollToTop />
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/verify-email" element={<EmailVerify />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/" element={
-          <ProtectedRoute>
+          <>
             <main>
               <Hero />
               <Services />
@@ -33,7 +35,7 @@ function App() {
               <Locations />
             </main>
             <Footer />
-          </ProtectedRoute>
+          </>
         } />
       </Routes>
     </div>

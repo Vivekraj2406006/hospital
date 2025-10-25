@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { useState, useContext } from "react";
+import { AppContext } from "../context/AppContext";
+import { useNavigate } from "react-router-dom";
 
 const initialFormState = {
   name: "",
@@ -12,6 +14,8 @@ const initialFormState = {
 const Appointment = () => {
   const [formData, setFormData] = useState(initialFormState);
   const [status, setStatus] = useState("");
+  const { isLoggedIn, user } = useContext(AppContext);
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -20,10 +24,16 @@ const Appointment = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    if (!isLoggedIn || !user?.isAccountVerified) {
+      alert("You must login and verify your account to submit an appointment request.");
+      navigate('/login');
+      return;
+    }
+    // ...existing code...
     console.log("Form data submitted:", formData);
     setStatus("Appointment request sent successfully!");
     setFormData(initialFormState);
-    setTimeout(() => setStatus(""), 4000);
+  setTimeout(() => setStatus(""), 4000);
   };
 
   return (

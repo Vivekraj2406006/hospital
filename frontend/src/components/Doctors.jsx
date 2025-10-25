@@ -50,11 +50,11 @@ const Doctors = () => {
                 onError={(e) => { e.currentTarget.src = 'https://placehold.co/400x400/e0e0e0/b0b0b0?text=Doctor+Photo'; }}
               />
               <div className="p-6">
-                <h3 className="text-2xl font-semibold mb-1">{doc.name}</h3>
-                <p className="text-primary-dark font-medium text-lg">{doc.specialty}</p>
-                <div className="text-gray-600 mt-3">
+                <h3 className="text-2xl font-bold mb-2 text-[#399fa8]">{doc.name}</h3>
+                <p className="text-primary-dark font-semibold text-lg mb-2">{doc.specialty}</p>
+                <div className="text-gray-700 mt-3 text-left space-y-1">
                   {doc.bio.split('\n').map((line, idx) => (
-                    <div key={idx}>{line}</div>
+                    <div key={idx} className={idx === 0 ? "font-semibold" : ""}>{line}</div>
                   ))}
                 </div>
               </div>
