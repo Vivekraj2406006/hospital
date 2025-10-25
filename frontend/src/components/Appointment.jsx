@@ -37,13 +37,13 @@ const Appointment = () => {
   };
 
   return (
-    <section id="appointment" className="py-16 md:py-24 bg-primary text-onPrimary">
+    <section id="appointment" className="py-16 md:py-24 bg-[#3edae8] text-onPrimary">
       <div className="container mx-auto px-6">
           <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-extrabold text-[#399fa8] mb-2 tracking-tight">
+            <h2 className="text-3xl md:text-4xl font-extrabold text-[#f2f6f6] mb-2 tracking-tight">
               Book an Appointment
             </h2>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            <p className="text-lg text-gray-800 max-w-2xl mx-auto">
               Fill out the form below to request an appointment. Our team will get
               back to you shortly.
             </p>
@@ -179,7 +179,7 @@ const Appointment = () => {
           <div className="text-center mt-8">
             <button
               type="submit"
-                className="bg-[#399fa8] w-full md:w-auto px-10 py-3 rounded-full text-lg font-semibold shadow-lg text-white hover:bg-[#2b7a78] transition"
+                className="bg-[#41c1cd] w-full md:w-auto px-10 py-3 rounded-full text-lg font-semibold shadow-lg text-white hover:bg-[#2b7a78] transition"
             >
               Submit Request
             </button>

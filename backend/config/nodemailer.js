@@ -1,9 +1,7 @@
 import 'dotenv/config';
 import nodemailer from 'nodemailer';
 
-// Debug: Print SMTP credentials (mask password)
-console.log('SMTP_USER:', process.env.SMTP_USER);
-console.log('SMTP_PASS:', process.env.SMTP_PASS ? process.env.SMTP_PASS.slice(0, 2) + '***' : undefined);
+
 
 let transporter;
 
