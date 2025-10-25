@@ -12,7 +12,7 @@ const Header = () => {
   const navigate = useNavigate();
 
   return (
-    <header className="bg-white shadow-sm sticky top-0 z-1000 ">
+    <header className="bg-white shadow-sm sticky top-0 z-[1000] ">
       <nav className="container mx-auto px-6 py-4 flex justify-between items-center">
         {/* Logo */}
         <a
