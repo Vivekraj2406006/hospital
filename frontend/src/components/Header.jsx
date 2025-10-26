@@ -36,18 +36,27 @@ const Header = () => {
 
         {/* Desktop Navigation */}
         <ul className="hidden md:flex items-center space-x-6">
-          {isAdminPage ? (
-            // Simplified admin header: only Home and Logout (logout returns to site root)
-            <>
-              <li>
+          {["Home", "Services", "Doctors", "About", "Locations", "Contact"].map(
+            (item) => (
+              <li key={item}>
                 <button
                   className="text-muted hover:text-primary hover:text-gray-400 font-medium transition bg-transparent border-none cursor-pointer"
                   onClick={() => {
-                    navigate("/");
-                    setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 100);
+                    if (item === "Home") {
+                      navigate("/");
+                      setTimeout(() => {
+                        window.scrollTo({ top: 0, behavior: "smooth" });
+                      }, 100);
+                    } else {
+                      navigate("/");
+                      setTimeout(() => {
+                        const el = document.getElementById(item.toLowerCase().replace(" ", ""));
+                        if (el) el.scrollIntoView({ behavior: "smooth" });
+                      }, 100);
+                    }
                   }}
                 >
-                  Home
+                  {item}
                 </button>
               </li>
             )
