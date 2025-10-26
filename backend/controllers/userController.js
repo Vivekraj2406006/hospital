@@ -2,7 +2,8 @@ import userModel from '../models/userModels.js';
 
 export const getUser = async (req, res) => {
     try {
-        // userAuth middleware attaches req.user when token is valid
+        req.user = await userModel.findById(req.userId).select('-password');
+
         if (!req.user) {
             return res.json({ success: false, message: 'User not found' });
         }
