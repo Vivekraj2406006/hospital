@@ -46,9 +46,20 @@ const Login = () => {
         }
         const { data } = await axios.post(`${backendUrl}/api/auth/login`, { email, password });
         if (data.success) {
-          setIsLoggedIn(true);
-          getUserData();
-          navigate("/");
+            if (!data.user.isAccountVerified) {
+            // Send OTP email after registration
+            try {
+              await axios.post(`${backendUrl}/api/auth/send-verify-otp`);
+              toast.success("Verify you email for login. Please check your email for OTP.");
+            } catch (otpError) {
+              toast.error("Failed to send OTP for email verification.");
+            }
+            navigate("/verify-email");
+            }
+            else{
+              getUserData();
+              navigate('/');
+            }
         } else {
           toast.error(data.message);
         }
@@ -60,7 +71,7 @@ const Login = () => {
 
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-[#3b8686]/30 via-[#0e9aa7]/20 to-[#66c2c2]/30 px-4">
+    <div className="flex items-center justify-center min-h-screen bg-linear-to-br from-[#3b8686]/30 via-[#0e9aa7]/20 to-[#66c2c2]/30 px-4">
       <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl p-8 sm:p-12 relative z-10 border border-gray-100">
         <div className="flex flex-col items-center mb-6">
           <span className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[#399fa8]/10 mb-2">
@@ -122,7 +133,7 @@ const Login = () => {
           <div className="flex justify-between items-center">
             <button
               type="submit"
-              className="w-full py-3 rounded-xl bg-gradient-to-r from-[#399fa8] to-[#0e9aa7] text-white font-bold text-lg shadow-md hover:from-[#0e9aa7] hover:to-[#399fa8] transition"
+              className="w-full py-3 rounded-xl bg-linear-to-r from-[hsl(185,49%,44%)] to-[hsl(185,85%,35%)] text-white font-bold text-lg shadow-md hover:from-[hsl(185,85%,34%)] hover:to-[hsl(185,49%,28%)] transition hover:cursor-pointer"
             >
               {state === "Sign Up" ? "Sign Up" : "Login"}
             </button>
@@ -131,7 +142,7 @@ const Login = () => {
         <div className="flex flex-col items-center mt-6">
           <button
             onClick={() => navigate("/reset-password")}
-            className="text-[#399fa8] hover:underline text-sm font-medium mb-2"
+            className="text-[#399fa8] hover:underline text-sm font-medium mb-2 hover:cursor-pointer"
             type="button"
           >
             Forgot Password?

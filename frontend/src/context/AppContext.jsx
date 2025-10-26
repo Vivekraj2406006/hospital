@@ -14,7 +14,7 @@ export const AppContextProvider = ({ children }) => {
       const { data } = await axios.get(`${backendUrl}/api/users/get-user`);
       if (data.success) {
         setUser(data.user);
-        setIsLoggedIn(true);
+        setIsLoggedIn(data.user.isAccountVerified);
       } else {
         setUser(null);
         setIsLoggedIn(false);
@@ -26,10 +26,7 @@ export const AppContextProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    const token = document.cookie.split("; ").find((row) => row.startsWith("token="));
-    if (token) {
       getUserData();
-    }
   }, []);
 
   const logout = async () => {

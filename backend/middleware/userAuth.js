@@ -9,8 +9,6 @@ const userAuth = async (req, res, next) => {
         }
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         req.userId = decoded.id;
-        // Optionally, fetch user and attach to req.user
-        req.user = await userModel.findById(decoded.id).select('-password');
         next();
     } catch (error) {
         return res.status(401).json({ success: false, message: 'Token is not valid' });

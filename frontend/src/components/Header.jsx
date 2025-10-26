@@ -7,10 +7,11 @@ import { useNavigate, Link, useLocation } from "react-router-dom";
 const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const { isLoggedIn, logout } = useContext(AppContext);
+  const { isLoggedIn, getUserData, logout } = useContext(AppContext);
   const navigate = useNavigate();
   const location = useLocation();
   const isAdminPage = location.pathname.startsWith("/admin");
+  // getUserData();
 
   const navItems = ["Home", "Services", "Doctors", "About", "Locations", "Contact"];
 
@@ -36,7 +37,7 @@ const Header = () => {
 
         {/* Desktop Navigation */}
         <ul className="hidden md:flex items-center space-x-6">
-          {["Home", "Services", "Doctors", "About", "Locations", "Contact"].map(
+          {navItems.map(
             (item) => (
               <li key={item}>
                 <button
@@ -89,7 +90,7 @@ const Header = () => {
             <li>
               <button
                 onClick={logout}
-                className="ml-4 px-5 py-2 rounded-full bg-gradient-to-r from-[#399fa8] to-[#0e9aa7] text-white font-medium shadow-md hover:from-[#0e9aa7] hover:to-[#399fa8] transition"
+                className="ml-4 px-5 py-2 rounded-full bg-gradient-to-r from-[#399fa8] to-[#0e9aa7] text-white font-medium shadow-md hover:from-[#0e9aa7] hover:to-[#399fa8] hover: cursor-pointer transition"
               >
                 Logout
               </button>
