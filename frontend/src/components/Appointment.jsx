@@ -14,7 +14,7 @@ const initialFormState = {
 const Appointment = () => {
   const [formData, setFormData] = useState(initialFormState);
   const [status, setStatus] = useState("");
-  const { isLoggedIn, user } = useContext(AppContext);
+  const { isLoggedIn, getUserData,  user } = useContext(AppContext);
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -24,6 +24,7 @@ const Appointment = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    // getUserData();
     if (!isLoggedIn || !user?.isAccountVerified) {
       alert("You must login and verify your account to submit an appointment request.");
       navigate('/login');

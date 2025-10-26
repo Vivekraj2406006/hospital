@@ -28,7 +28,7 @@ const EmailVerify = () => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen px-4 bg-gradient-to-br from-[#3b8686]/30 via-[#0e9aa7]/20 to-[#66c2c2]/30">
+    <div className="flex items-center justify-center min-h-screen px-4 bg-linear-to-br from-[#3b8686]/30 via-[#0e9aa7]/20 to-[#66c2c2]/30">
       <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl p-8 sm:p-12 relative z-10 border border-gray-100">
         <div className="flex flex-col items-center mb-6">
           <span className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[#399fa8]/10 mb-2">

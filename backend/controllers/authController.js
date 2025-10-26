@@ -28,15 +28,16 @@ export const register = async (req, res) => {
     try {
         // If DB is not connected, allow a mock registration so developers can test flows.
         if (!isDbConnected) {
-            const mockId = `mock_${Date.now()}`;
-            const token = jwt.sign({ id: mockId, email }, process.env.JWT_SECRET, { expiresIn: '7d' });
-            res.cookie('token', token, {
-                httpOnly: true,
-                secure: process.env.NODE_ENV === 'production',
-                sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
-                maxAge: 7 * 24 * 60 * 60 * 1000
-            });
-            return res.json({ success: true, message: 'Registered (mock)' });
+            // const mockId = `mock_${Date.now()}`;
+            // const token = jwt.sign({ id: mockId, email }, process.env.JWT_SECRET, { expiresIn: '7d' });
+            // res.cookie('token', token, {
+            //     httpOnly: true,
+            //     secure: process.env.NODE_ENV === 'production',
+            //     sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+            //     maxAge: 7 * 24 * 60 * 60 * 1000
+            // });
+            // return res.json({ success: true, message: 'Registered (mock)' });
+            return res.json({success: false, message: "Something is wrong on our end. Please try again later."});
         }
 
         const existingUser = await userModel.findOne({ email });
@@ -59,7 +60,7 @@ export const register = async (req, res) => {
                 from: process.env.SENDER_EMAIL,
                 to: email,
                 subject: "Welcome to SR EMERGENCY!",
-                text: `Your account has been created with email: ${email}`
+                text: `Your account has been created with email: ${email}. But you are not verified yet.`
             };
             try {
                 await transporter.sendMail(mailOptions);
@@ -81,15 +82,17 @@ export const login = async (req, res) => {
     try {
         // If DB is not connected, allow any login (useful for local dev/demo)
         if (!isDbConnected) {
-            const mockId = `mock_${Date.now()}`;
-            const token = jwt.sign({ id: mockId, email }, process.env.JWT_SECRET, { expiresIn: '7d' });
-            res.cookie('token', token, {
-                httpOnly: true,
-                secure: process.env.NODE_ENV === 'production',
-                sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
-                maxAge: 7 * 24 * 60 * 60 * 1000
-            });
-            return res.json({ success: true, message: 'Logged in (mock)' });
+            // const mockId = `mock_${Date.now()}`;
+            // const token = jwt.sign({ id: mockId, email }, process.env.JWT_SECRET, { expiresIn: '7d' });
+            // res.cookie('token', token, {
+            //     httpOnly: true,
+            //     secure: process.env.NODE_ENV === 'production',
+            //     sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+            //     maxAge: 7 * 24 * 60 * 60 * 1000
+            // });
+            // return res.json({ success: true, message: 'Logged in (mock)' });
+            return res.json({success: false, message: "Something went wrong on our end. Please try again later."});
+
         }
 
         const user = await userModel.findOne({ email });
@@ -107,7 +110,7 @@ export const login = async (req, res) => {
             sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
             maxAge: 7 * 24 * 60 * 60 * 1000
         });
-        res.json({ success: true });
+        res.json({ success: true, user: user });
     } catch (error) {
         res.json({ success: false, message: error.message });
     }
@@ -131,9 +134,9 @@ export const sendVerifyOtp = async (req, res) => {
     try {
         const userId = req.userId;
         if (!userId) {
-            return res.json({ success: false, message: 'User not authenticated' });
+            return res.json({ success: false, message: 'UserID not possible' });
         }
-        const user = await userModel.findById(userId);
+        const user = await userModel.findById(userId).select('-password');
         if (!user) {
             return res.json({ success: false, message: 'User not found' });
         }
@@ -192,7 +195,10 @@ export const verifyEmail = async (req, res) => {
 
 export const isAuthenticated = async (req, res) => {
     try {
-        return res.json({ success: true });
+        req.user = await userModel.findById(decoded.id).select('-password');
+
+        if(req.user.isAccountVerified) return res.json({ success: true });
+        else return res.json({ success: false })
     } catch (error) {
         res.json({ success: false, message: error.message });
     }
