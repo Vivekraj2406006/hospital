@@ -1,5 +1,5 @@
 import appointmentModel from "../models/appointmentModel.js";
-import transporter from "../nodemailer.js";
+import transporter from "../config/nodemailer.js";
 
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
 const MAIL_FROM = process.env.SENDER_EMAIL || ADMIN_EMAIL || process.env.SMTP_USER;
