@@ -1,4 +1,4 @@
-# 🏥 MediCare Hospital Website
+# 🏥 SR Emergency Hospital Website
 
 <div align="center">
 
