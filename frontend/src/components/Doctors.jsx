@@ -38,7 +38,7 @@ const Doctors = () => {
         </div>
 
         {/* Doctors Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
           {doctorsList.map((doc) => (
             <div key={doc.name} className="bg-white border border-gray-200 rounded-2xl shadow-lg overflow-hidden text-center">
               <div className="w-full h-56 overflow-hidden bg-gray-100">
