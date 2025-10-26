@@ -1,13 +1,12 @@
 import Logo from "../assets/logo.png";
 import React, { useState, useEffect } from "react";
+import img1 from "../assets/img1.jpg";
+import img2 from "../assets/img2.jpg";
+import img3 from "../assets/img3.jpg";
+import img4 from "../assets/img4.jpg";
+import img5 from "../assets/img5.jpg";
 
-const images = [
-  "https://placehold.co/600x400/a5f3fc/0891b2?text=Our+State-of-the-Art+Facility",
-  "https://placehold.co/600x400/ffe066/2b7a78?text=Modern+Operation+Theater",
-  "https://placehold.co/600x400/ff6f69/fff?text=Advanced+ICU+Unit",
-  "https://placehold.co/600x400/96ceb4/393e46?text=Patient+Care+Rooms",
-  "https://placehold.co/600x400/88d8b0/22223b?text=Emergency+Services"
-];
+const images = [img1, img2, img3, img4, img5];
 
 const About = () => {
   const [current, setCurrent] = useState(0);

@@ -56,10 +56,25 @@ const Footer = () => {
 
           {/* Social Media Icons */}
           <div className="flex space-x-4 mt-4 md:mt-0">
-            <a href="#" className="text-gray-400 hover:text-primary-light"><Facebook className="w-6 h-6" /></a>
-            <a href="#" className="text-gray-400 hover:text-primary-light"><Twitter className="w-6 h-6" /></a>
-            <a href="#" className="text-gray-400 hover:text-primary-light"><Instagram className="w-6 h-6" /></a>
-            <a href="#" className="text-gray-400 hover:text-primary-light"><Linkedin className="w-6 h-6" /></a>
+            <a
+              href="https://www.facebook.com/share/15he22tavv/"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="SR EMERGENCY on Facebook"
+              className="text-gray-400 hover:text-primary-light"
+            >
+              <Facebook className="w-6 h-6" />
+            </a>
+
+            <a
+              href="https://www.instagram.com/sremergencyhospital?igsh=ZHlzd3l6ZTR6MzBy"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="SR EMERGENCY on Instagram"
+              className="text-gray-400 hover:text-primary-light"
+            >
+              <Instagram className="w-6 h-6" />
+            </a>
           </div>
         </div>
       </div>
