@@ -174,11 +174,11 @@ export const verifyEmail = async (req, res) => {
         if (!user) {
             return res.json({ success: false, message: 'User not found' });
         }
-        if (user.verifyOtp === '' || user.verifyOtp !== otp) {
-            return res.json({ success: false, message: 'Invalid OTP' });
-        }
         if (user.verifyOtpExpireAt < Date.now()) {
             return res.json({ success: false, message: 'OTP expired' });
+        }
+        if (user.verifyOtp === '' || user.verifyOtp !== otp) {
+            return res.json({ success: false, message: 'Invalid OTP' });
         }
         user.isAccountVerified = true;
         user.verifyOtp = '';
@@ -241,11 +241,11 @@ export const resetPassword = async (req, res) => {
         if (!user) {
             return res.json({ success: false, message: 'User not found' });
         }
-        if (user.resetOtp === '' || user.resetOtp !== otp) {
-            return res.json({ success: false, message: 'Invalid OTP' });
-        }
         if (user.resetOtpExpireAt < Date.now()) {
             return res.json({ success: false, message: 'OTP expired' });
+        }
+        if (user.resetOtp === '' || user.resetOtp !== otp) {
+            return res.json({ success: false, message: 'Invalid OTP' });
         }
         const hashedPassword = await bcrypt.hash(newPassword, 10);
         user.password = hashedPassword;

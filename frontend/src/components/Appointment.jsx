@@ -179,7 +179,7 @@ const Appointment = () => {
           <div className="text-center mt-8">
             <button
               type="submit"
-                className="bg-[#41c1cd] w-full md:w-auto px-10 py-3 rounded-full text-lg font-semibold shadow-lg text-white hover:bg-[#2b7a78] transition"
+                className="bg-[#41c1cd] w-full md:w-auto px-10 py-3 rounded-full text-lg font-semibold shadow-lg text-white hover:bg-[#2b7a78] transition cursor-pointer"
             >
               Submit Request
             </button>

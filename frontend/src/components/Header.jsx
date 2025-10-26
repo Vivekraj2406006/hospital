@@ -15,7 +15,7 @@ const Header = () => {
   const navItems = ["Home", "Services", "Doctors", "About", "Locations", "Contact"];
 
   return (
-    <header className="bg-white shadow-sm sticky top-0 z-[1000] ">
+    <header className="bg-white shadow-sm sticky top-0 z-1000 ">
       <nav className="container mx-auto px-6 py-4 flex justify-between items-center">
         {/* Logo */}
         <a href="#" className="text-3xl font-bold flex items-center text-[#399fa8]">
@@ -41,7 +41,7 @@ const Header = () => {
             <>
               <li>
                 <button
-                  className="text-muted hover:text-primary font-medium transition bg-transparent border-none cursor-pointer"
+                  className="text-muted hover:text-primary hover:text-gray-400 font-medium transition bg-transparent border-none cursor-pointer"
                   onClick={() => {
                     navigate("/");
                     setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 100);
@@ -50,90 +50,41 @@ const Header = () => {
                   Home
                 </button>
               </li>
-
-              <li>
-                <button
-                  onClick={() => {
-                    try { sessionStorage.removeItem('isAdmin'); } catch (e) {}
-                    if (isLoggedIn) logout();
-                    navigate('/');
-                  }}
-                  className="ml-4 px-5 py-2 rounded-full bg-gradient-to-r from-[#399fa8] to-[#0e9aa7] text-white font-medium shadow-md hover:from-[#0e9aa7] hover:to-[#399fa8] transition"
-                >
-                  Logout
-                </button>
-              </li>
-            </>
-          ) : (
-            <>
-              {navItems.map((item) => (
-                <li key={item}>
-                  <button
-                    className="text-muted hover:text-primary font-medium transition bg-transparent border-none cursor-pointer"
-                    onClick={() => {
-                      if (item === "Home") {
-                        navigate("/");
-                        setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 100);
-                      } else {
-                        navigate("/");
-                        setTimeout(() => {
-                          const el = document.getElementById(item.toLowerCase().replace(" ", ""));
-                          if (el) el.scrollIntoView({ behavior: "smooth" });
-                        }, 100);
-                      }
-                    }}
-                  >
-                    {item}
-                  </button>
-                </li>
-              ))}
-
-              <li>
-                <button
-                  className="bg-[#10b7c6] text-white px-5 py-2 rounded-full font-medium shadow-md hover:bg-primary/90 transition"
-                  onClick={() => {
-                    navigate("/");
-                    setTimeout(() => {
-                      const el = document.getElementById("appointment");
-                      if (el) el.scrollIntoView({ behavior: "smooth" });
-                    }, 100);
-                  }}
-                >
-                  Book Appointment
-                </button>
-              </li>
-
-              {!isLoggedIn && (
-                <li>
-                  <Link
-                    to="/login"
-                    className="ml-4 px-5 py-2 rounded-full bg-gradient-to-r from-[#399fa8] to-[#0e9aa7] text-white font-medium shadow-md hover:from-[#0e9aa7] hover:to-[#399fa8] transition"
-                  >
-                    Login
-                  </Link>
-                </li>
-              )}
-
-              {/* <li>
-                <Link
-                  to="/admin"
-                  className="ml-2 px-4 py-2 rounded-full bg-transparent border border-[#399fa8] text-[#399fa8] font-medium hover:bg-[#399fa8] hover:text-white transition"
-                >
-                  Admin
-                </Link>
-              </li> */}
-
-              {isLoggedIn && (
-                <li>
-                  <button
-                    onClick={logout}
-                    className="ml-4 px-5 py-2 rounded-full bg-gradient-to-r from-[#399fa8] to-[#0e9aa7] text-white font-medium shadow-md hover:from-[#0e9aa7] hover:to-[#399fa8] transition"
-                  >
-                    Logout
-                  </button>
-                </li>
-              )}
-            </>
+            )
+          )}
+          <li>
+            <button
+              className="bg-[#10b7c6] text-white px-5 py-2 rounded-full font-medium shadow-md hover:bg-primary/90 transition cursor-pointer hover:bg-[hsl(185,85%,32%)]"
+              onClick={() => {
+                navigate("/");
+                setTimeout(() => {
+                  const el = document.getElementById("appointment");
+                  if (el) el.scrollIntoView({ behavior: "smooth" });
+                }, 100);
+              }}
+            >
+              Book Appointment
+            </button>
+          </li>
+          {!isLoggedIn && (
+            <li>
+              <Link
+                to="/login"
+                className="ml-4 px-5 py-2 rounded-full bg-gradient-to-r from-[#399fa8] to-[#0e9aa7] text-white font-medium shadow-md hover:from-[#0e9aa7] hover:to-[hsl(185,49%,30%)] transition"
+              >
+                Login
+              </Link>
+            </li>
+          )}
+          {isLoggedIn && (
+            <li>
+              <button
+                onClick={logout}
+                className="ml-4 px-5 py-2 rounded-full bg-gradient-to-r from-[#399fa8] to-[#0e9aa7] text-white font-medium shadow-md hover:from-[#0e9aa7] hover:to-[#399fa8] transition"
+              >
+                Logout
+              </button>
+            </li>
           )}
         </ul>
       </nav>
