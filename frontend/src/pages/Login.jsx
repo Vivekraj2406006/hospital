@@ -9,7 +9,7 @@ import Logo from "../assets/logo.png";
 const Login = () => {
   const navigate = useNavigate();
   const { backendUrl, setIsLoggedIn, getUserData } = useContext(AppContext);
-  const [state, setState] = useState("Sign Up");
+  const [state, setState] = useState("Login");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
