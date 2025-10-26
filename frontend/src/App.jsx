@@ -10,6 +10,7 @@ import Appointment from './components/Appointment';
 import Locations from './components/Locations';
 import Footer from './components/Footer';
 import Login from './pages/Login';
+import HospitalAdminApp from './components/HospitalAdminApp';
 import EmailVerify from './pages/EmailVerify';
 import ResetPassword from './pages/ResetPassword';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -22,6 +23,7 @@ function App() {
       <ScrollToTop />
       <Routes>
         <Route path="/login" element={<Login />} />
+        <Route path="/admin" element={<HospitalAdminApp />} />
         <Route path="/verify-email" element={<EmailVerify />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/" element={
