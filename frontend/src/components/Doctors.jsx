@@ -1,24 +1,22 @@
 
 import DrVidyanandImg from "../assets/Dr.Vidyanand.jpg";
+import DrSunilImg from "../assets/Dr.SunilKumar.jpg";
+import DrKusumImg from "../assets/DrrKsm.png";
 
 const doctorsList = [
   {
-    img: "",
-    name: "Dr.Sunil Kumar ",
+    img: DrSunilImg,
+    name: "Dr. Sunil Kumar",
     specialty: "Cardiologist",
+    // objectPosition will be applied to this doctor's img so the photo can be shifted vertically
+    imgPosition: 'center 20%',
     bio: `MBBS(PMCH Patna) ,MD (Medicine)\nCertified cource in Diabetologist \n Ex-Resident Safadargang Hospital New Delhi\nEx-Senior-Regident Jawahar lal Nehru Medical College and Hospital Bhagalpur \n Cardiologist & Diabetologist\n Reg-No:43985`
   },
   {
-    img: "https://placehold.co/400x400/cffafe/0e7490?text=Dr.+Mark+Chen",
-    name: "Dr. Mark Chen",
-    specialty: "Pediatrician",
-    bio: "Dedicated to the health and well-being of children from birth to young adulthood."
-  },
-  {
-    img: "https://placehold.co/400x400/cffafe/0e7490?text=Dr.+Sarah+Jenkins",
-    name: "Dr. Sarah Jenkins",
-    specialty: "Neurologist",
-    bio: "Specializes in complex neurological disorders and innovative treatments."
+    img: DrKusumImg,
+    name: "Dr. Kusum Lata",
+    specialty: "Gynecologist",
+    bio: "MBBS \n DGO \n Reg no: 59740 \n Former Medical Officer \n Gynecologist & Infertility specialist"
   },
   {
     img: DrVidyanandImg,
@@ -43,12 +41,15 @@ const Doctors = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
           {doctorsList.map((doc) => (
             <div key={doc.name} className="bg-white border border-gray-200 rounded-2xl shadow-lg overflow-hidden text-center">
-              <img
-                src={doc.img}
-                alt={doc.name}
-                className="w-full h-56 object-cover"
-                onError={(e) => { e.currentTarget.src = 'https://placehold.co/400x400/e0e0e0/b0b0b0?text=Doctor+Photo'; }}
-              />
+              <div className="w-full h-56 overflow-hidden bg-gray-100">
+                <img
+                  src={doc.img}
+                  alt={doc.name}
+                  className="w-full h-full object-cover"
+                  style={doc.imgPosition ? { objectPosition: doc.imgPosition } : undefined}
+                  onError={(e) => { e.currentTarget.src = 'https://placehold.co/400x400/e0e0e0/b0b0b0?text=Doctor+Photo'; }}
+                />
+              </div>
               <div className="p-6">
                 <h3 className="text-2xl font-bold mb-2 text-[#399fa8]">{doc.name}</h3>
                 <p className="text-primary-dark font-semibold text-lg mb-2">{doc.specialty}</p>
