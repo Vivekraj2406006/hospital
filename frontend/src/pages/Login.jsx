@@ -1,4 +1,3 @@
-
 import React, { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -15,6 +14,9 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  // admin credentials (from Vite env if provided)
+  const ADMIN_EMAIL = import.meta.env.VITE_ADMIN_EMAIL;
+  const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD || 'Admin123';
 
   const onSubmitHandler = async (e) => {
     e.preventDefault();
@@ -35,6 +37,13 @@ const Login = () => {
           toast.error(data.message);
         }
       } else {
+        // quick admin demo bypass: if user enters demo admin credentials, go to admin app
+        if ((email || '').trim() === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
+          try { sessionStorage.setItem('isAdmin', 'true'); } catch (e) {}
+          toast.success('Admin login successful');
+          navigate('/admin');
+          return;
+        }
         const { data } = await axios.post(`${backendUrl}/api/auth/login`, { email, password });
         if (data.success) {
           setIsLoggedIn(true);
