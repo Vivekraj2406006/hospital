@@ -1,29 +1,48 @@
-import { HeartPulse, Baby, Brain, Activity } from "lucide-react";
-
 const services = [
   {
-    icon: <HeartPulse className="w-8 h-8" />,
-    title: "Cardiology",
-    description:
-      "Expert heart care from diagnosis to treatment, ensuring your cardiovascular health.",
+    icon: <span className="text-3xl">👩‍⚕️</span>,
+    title: "GYNECOLOGY",
+    description: "Comprehensive women’s health services including prenatal care and gynecologic treatments.",
   },
   {
-    icon: <Baby className="w-8 h-8" />,
-    title: "Pediatrics",
-    description:
-      "Compassionate and comprehensive care for infants, children, and adolescents.",
+    icon: <span className="text-3xl">🦴</span>,
+    title: "ORTHOPEDICS",
+    description: "Diagnosis and treatment for bones, joints and musculoskeletal injuries.",
   },
   {
-    icon: <Brain className="w-8 h-8" />,
-    title: "Neurology",
-    description:
-      "Advanced diagnostics and treatment for disorders of the nervous system.",
+    icon: <span className="text-3xl">❤️‍🩹</span>,
+    title: "CARDIOLOGY",
+    description: "Expert heart care from diagnosis to treatment to protect cardiovascular health.",
   },
   {
-    icon: <Activity className="w-8 h-8" />,
-    title: "Emergency Care",
-    description:
-      "24/7 state-of-the-art emergency department ready for any medical crisis.",
+    icon: <span className="text-3xl">💊</span>,
+    title: "Pharmacy",
+    description: "On-site pharmacy services for prescriptions and medication counseling.",
+  },
+  {
+    icon: <span className="text-3xl">🔬</span>,
+    title: "Pathology",
+    description: "Accurate lab diagnostics and pathology services to support clinical decisions.",
+  },
+  {
+    icon: <span className="text-3xl">🖥️</span>,
+    title: "Ultrasound",
+    description: "High-resolution ultrasound imaging for diagnosis and monitoring.",
+  },
+  {
+    icon: <span className="text-3xl">📈</span>,
+    title: "ECG",
+    description: "Electrocardiography services for rapid cardiac rhythm and function assessment.",
+  },
+  {
+    icon: <span className="text-3xl">🩻</span>,
+    title: "X-ray",
+    description: "Digital radiography for fast and reliable imaging of injuries and conditions.",
+  },
+  {
+    icon: <span className="text-3xl">🐍</span>,
+    title: "Snakebite envenomation and poisoning (or ingestion of a toxic substance)",
+    description: "Specialised emergency treatment and antidote management for envenomation and poisoning cases.",
   },
 ];
 

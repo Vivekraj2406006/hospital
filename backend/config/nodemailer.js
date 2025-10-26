@@ -15,7 +15,7 @@ if (process.env.SMTP_USER && process.env.SMTP_PASS) {
             pass: process.env.SMTP_PASS
         },
         tls: {
-            rejectUnauthorized: false
+            rejectUnauthorized: process.env.NODE_ENV === 'production' ? true : false
         }
     });
 

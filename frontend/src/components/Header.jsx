@@ -1,24 +1,24 @@
-
 import { useState, useContext } from "react";
 import { AppContext } from "../context/AppContext";
 import { Menu } from "lucide-react";
 import Logo from "../assets/logo.png";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 
 const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const { isLoggedIn, logout } = useContext(AppContext);
   const navigate = useNavigate();
+  const location = useLocation();
+  const isAdminPage = location.pathname.startsWith("/admin");
+
+  const navItems = ["Home", "Services", "Doctors", "About", "Locations", "Contact"];
 
   return (
-    <header className="bg-white shadow-sm sticky top-0 z-[1000] ">
+    <header className="bg-white shadow-sm sticky top-0 z-1000 ">
       <nav className="container mx-auto px-6 py-4 flex justify-between items-center">
         {/* Logo */}
-        <a
-          href="#"
-          className="text-3xl font-bold  flex items-center text-[#399fa8]"
-        >
+        <a href="#" className="text-3xl font-bold flex items-center text-[#399fa8]">
           <img src={Logo} alt="SR Emergency Logo" className="w-14 h-14 mr-2" />
           SR EMERGENCY
         </a>
@@ -40,7 +40,7 @@ const Header = () => {
             (item) => (
               <li key={item}>
                 <button
-                  className="text-muted hover:text-primary font-medium transition bg-transparent border-none cursor-pointer"
+                  className="text-muted hover:text-primary hover:text-gray-400 font-medium transition bg-transparent border-none cursor-pointer"
                   onClick={() => {
                     if (item === "Home") {
                       navigate("/");
@@ -63,7 +63,7 @@ const Header = () => {
           )}
           <li>
             <button
-              className="bg-[#10b7c6] text-white px-5 py-2 rounded-full font-medium shadow-md hover:bg-primary/90 transition"
+              className="bg-[#10b7c6] text-white px-5 py-2 rounded-full font-medium shadow-md hover:bg-primary/90 transition cursor-pointer hover:bg-[hsl(185,85%,32%)]"
               onClick={() => {
                 navigate("/");
                 setTimeout(() => {
@@ -79,7 +79,7 @@ const Header = () => {
             <li>
               <Link
                 to="/login"
-                className="ml-4 px-5 py-2 rounded-full bg-gradient-to-r from-[#399fa8] to-[#0e9aa7] text-white font-medium shadow-md hover:from-[#0e9aa7] hover:to-[#399fa8] transition"
+                className="ml-4 px-5 py-2 rounded-full bg-gradient-to-r from-[#399fa8] to-[#0e9aa7] text-white font-medium shadow-md hover:from-[#0e9aa7] hover:to-[hsl(185,49%,30%)] transition"
               >
                 Login
               </Link>
@@ -103,36 +103,64 @@ const Header = () => {
         id="mobile-menu"
         className={`${isMobileMenuOpen ? "block" : "hidden"} md:hidden px-6 pb-4 space-y-2`}
       >
-        {["Home", "Services", "Doctors", "About Us", "Locations", "Contact"].map(
-          (item) => (
+        {isAdminPage ? (
+          <>
             <button
-              key={item}
               className="block text-muted hover:text-primary font-medium transition bg-transparent border-none cursor-pointer w-full text-left"
               onClick={() => {
-                if (item === "Home") {
-                  navigate("/");
-                  setTimeout(() => {
-                    window.scrollTo({ top: 0, behavior: "smooth" });
-                  }, 100);
-                } else {
-                  navigate("/");
-                  setTimeout(() => {
-                    const el = document.getElementById(item.toLowerCase().replace(" ", ""));
-                    if (el) el.scrollIntoView({ behavior: "smooth" });
-                  }, 100);
-                }
+                navigate("/");
+                setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 100);
+                setIsMobileMenuOpen(false);
               }}
             >
-              {item}
+              Home
             </button>
-          )
+            <button
+              className="block text-white bg-gradient-to-r from-[#399fa8] to-[#0e9aa7] text-center px-5 py-2 rounded-full font-medium shadow-md hover:from-[#0e9aa7] hover:to-[#399fa8] transition mt-2"
+              onClick={() => {
+                try { sessionStorage.removeItem('isAdmin'); } catch (e) {}
+                if (isLoggedIn) logout();
+                navigate('/');
+                setIsMobileMenuOpen(false);
+              }}
+            >
+              Logout
+            </button>
+          </>
+        ) : (
+          <>
+            {['Home', 'Services', 'Doctors', 'About Us', 'Locations', 'Contact'].map(
+              (item) => (
+                <button
+                  key={item}
+                  className="block text-muted hover:text-primary font-medium transition bg-transparent border-none cursor-pointer w-full text-left"
+                  onClick={() => {
+                    if (item === 'Home') {
+                      navigate('/');
+                      setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 100);
+                    } else {
+                      navigate('/');
+                      setTimeout(() => {
+                        const el = document.getElementById(item.toLowerCase().replace(' ', ''));
+                        if (el) el.scrollIntoView({ behavior: 'smooth' });
+                      }, 100);
+                    }
+                    setIsMobileMenuOpen(false);
+                  }}
+                >
+                  {item}
+                </button>
+              )
+            )}
+
+            <a
+              href="#appointment"
+              className="block bg-[#06a0ae] text-white text-center px-5 py-2 rounded-full font-medium shadow-md hover:bg-primary/90 transition mt-2"
+            >
+              Book Appointment
+            </a>
+          </>
         )}
-        <a
-          href="#appointment"
-          className="block bg-[#06a0ae] text-white text-center px-5 py-2 rounded-full font-medium shadow-md hover:bg-primary/90 transition mt-2"
-        >
-          Book Appointment
-        </a>
       </div>
     </header>
   );

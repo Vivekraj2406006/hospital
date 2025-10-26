@@ -1,4 +1,4 @@
-# 🏥 MediCare Hospital Website
+# 🏥 SR Emergency Hospital Website
 
 <div align="center">
 
@@ -10,7 +10,7 @@
 ![Express](https://img.shields.io/badge/Express-5.1.0-000000?style=for-the-badge&logo=express)
 ![MongoDB](https://img.shields.io/badge/MongoDB-Database-47A248?style=for-the-badge&logo=mongodb)
 
-**A modern, responsive website for MediCare Hospital providing comprehensive healthcare information and services**
+**A modern, responsive website for SR Emergency Hospital providing comprehensive healthcare information and services**
 
 [Live Demo](#) • [Report Bug](#) • [Request Feature](#)
 
@@ -43,9 +43,9 @@
 
 ## 🏥 About
 
-MediCare Hospital Website is a modern, fully responsive full-stack web application designed to provide patients and visitors with easy access to hospital information, services, and appointment booking functionality. Built with cutting-edge web technologies, the site offers a seamless user experience across all devices with secure user authentication and account management.
+SR Emergency Hospital Website is a modern, fully responsive full-stack web application designed to provide patients and visitors with easy access to hospital information, services, and appointment booking functionality. Built with cutting-edge web technologies, the site offers a seamless user experience across all devices with secure user authentication and account management.
 
-### Why MediCare Hospital Website?
+### Why SR Emergency Hospital Website?
 
 - 🎯 **Patient-Centric Design**: Intuitive navigation and clear information hierarchy
 - 📱 **Fully Responsive**: Optimized for desktop, tablet, and mobile devices
