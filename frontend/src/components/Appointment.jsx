@@ -3,6 +3,8 @@ import { AppContext } from "../context/AppContext";
 import { useNavigate } from "react-router-dom";
 import Logo from "../assets/logo.png";
 
+const API_BASE = import.meta.env.VITE_API_BASE || "";
+
 const initialFormState = {
   name: "",
   email: "",
@@ -15,6 +17,7 @@ const initialFormState = {
 const Appointment = () => {
   const [formData, setFormData] = useState(initialFormState);
   const [status, setStatus] = useState("");
+  const [submitting, setSubmitting] = useState(false);
   const { isLoggedIn, user } = useContext(AppContext);
   const navigate = useNavigate();
 
@@ -23,18 +26,67 @@ const Appointment = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  async function submitAppointment(payload) {
+    const res = await fetch(`${API_BASE}/api/appointments`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+      credentials: "include",
+    });
+    const text = await res.text();
+    let data = null;
+    try {
+      data = text ? JSON.parse(text) : null;
+    } catch {
+      data = text;
+    }
+    if (!res.ok) {
+      const msg = (data && (data.message || data.error)) || res.statusText;
+      throw new Error(msg);
+    }
+    return data;
+  }
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!isLoggedIn || !user?.isAccountVerified) {
       alert("You must login and verify your account to submit an appointment request.");
       navigate('/login');
       return;
     }
-    // ...existing code...
-    console.log("Form data submitted:", formData);
-    setStatus("Appointment request sent successfully!");
-    setFormData(initialFormState);
-  setTimeout(() => setStatus(""), 4000);
+
+    // Basic validation
+    if (!formData.name || !formData.email || !formData.phone || !formData.department || !formData.date) {
+      setStatus("Please fill in all required fields.");
+      setTimeout(() => setStatus(""), 4000);
+      return;
+    }
+
+    // Convert date-only input to ISO datetime (UTC midnight)
+    const appointmentDate = new Date(formData.date).toISOString();
+
+    const payload = {
+      patientName: formData.name.trim(),
+      email: formData.email.trim(),
+      phone: formData.phone.trim(),
+      department: formData.department.trim(),
+      appointmentDate,
+      doctor: "", // not present in form; backend supports optional
+      message: formData.message?.trim() || "",
+    };
+
+    try {
+      setSubmitting(true);
+      await submitAppointment(payload);
+      // Backend will send emails to both admin and user
+      setStatus("Appointment request sent successfully! A confirmation email has been sent.");
+      setFormData(initialFormState);
+    } catch (err) {
+      setStatus(err.message || "Failed to send appointment request. Please try again.");
+    } finally {
+      setTimeout(() => setStatus(""), 5000);
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -152,11 +204,11 @@ const Appointment = () => {
                   required
                 >
                   <option value="">Select a Department</option>
-                  <option value="cardiology">Cardiology</option>
-                  <option value="pediatrics">Pediatrics</option>
-                  <option value="neurology">Neurology</option>
-                  <option value="orthopedics">Orthopedics</option>
-                  <option value="general">General Checkup</option>
+                  <option value="Cardiology">Cardiology</option>
+                  <option value="Pediatrics">Pediatrics</option>
+                  <option value="Neurology">Neurology</option>
+                  <option value="Orthopedics">Orthopedics</option>
+                  <option value="General">General Checkup</option>
                 </select>
               </div>
             </div>
@@ -200,12 +252,15 @@ const Appointment = () => {
           <div className="text-center mt-8">
             <button
               type="submit"
-                className="w-full md:w-auto inline-flex items-center justify-center gap-2 px-8 py-3 rounded-full text-lg font-semibold text-white shadow-2xl bg-gradient-to-r from-[#39bfc4] to-[#0e9aa7] hover:from-[#0e9aa7] hover:to-[#399fa8] transform hover:-translate-y-0.5 transition-all focus:outline-none focus:ring-2 focus:ring-[#0e9aa7]/60"
+              disabled={submitting}
+              className="w-full md:w-auto inline-flex items-center justify-center gap-2 px-8 py-3 rounded-full text-lg font-semibold text-white shadow-2xl bg-gradient-to-r from-[#39bfc4] to-[#0e9aa7] hover:from-[#0e9aa7] hover:to-[#399fa8] transform hover:-translate-y-0.5 transition-all focus:outline-none focus:ring-2 focus:ring-[#0e9aa7]/60 disabled:opacity-60"
             >
-              <span>Submit Request</span>
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14M12 5l7 7-7 7" />
-              </svg>
+              <span>{submitting ? "Submitting..." : "Submit Request"}</span>
+              {!submitting && (
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14M12 5l7 7-7 7" />
+                </svg>
+              )}
             </button>
           </div>
           {/* Form Status Message */}

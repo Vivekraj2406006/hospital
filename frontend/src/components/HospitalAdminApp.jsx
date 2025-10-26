@@ -7,7 +7,6 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  Legend,
   ResponsiveContainer,
   PieChart,
   Pie,
@@ -17,14 +16,19 @@ import {
   Users,
   UserCheck,
   Activity,
-  LogOut,
   Trash2,
   UserPlus,
   Menu,
   X,
+  CalendarDays,
+  Mail,
+  Phone,
 } from "lucide-react";
 
-// Mock Backend API with dynamic data
+// Backend base URL (optional)
+const API_BASE = import.meta.env.VITE_API_BASE || "";
+
+// Mock Backend API with dynamic data (kept for demo staff/patient sections)
 const mockBackend = {
   admin: {
     email: import.meta.env.VITE_ADMIN_EMAIL,
@@ -294,14 +298,63 @@ const Dashboard = ({ onLogout }) => {
     contact: "",
   });
 
+  // Appointments state (real backend)
+  const [appointments, setAppointments] = useState([]);
+  const [apptMeta, setApptMeta] = useState({ page: 1, pages: 1, total: 0, limit: 20 });
+  const [apptLoading, setApptLoading] = useState(true);
+  const [apptError, setApptError] = useState("");
+  const [apptSort, setApptSort] = useState("-createdAt");
+
   useEffect(() => {
     refreshData();
   }, []);
 
+  useEffect(() => {
+    loadAppointments(1, apptMeta.limit || 20, apptSort);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [apptSort]);
+
   const refreshData = () => {
     setPatients(mockBackend.getLoggedInPatients());
     setStaff(mockBackend.getStaff());
+    loadAppointments(1, 20, apptSort);
   };
+
+  async function loadAppointments(page = 1, limit = 20, sort = "-createdAt") {
+    setApptLoading(true);
+    setApptError("");
+    try {
+      const q = new URLSearchParams({ page: String(page), limit: String(limit), sort });
+      const res = await fetch(`${API_BASE}/api/appointments?${q.toString()}`, {
+        credentials: "include",
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.message || "Failed to load appointments");
+      setAppointments(data.data || []);
+      setApptMeta(data.meta || { page, limit, pages: 1, total: (data.data || []).length });
+    } catch (err) {
+      setApptError(err.message || "Failed to load appointments");
+    } finally {
+      setApptLoading(false);
+    }
+  }
+
+  async function updateAppointmentStatus(id, status) {
+    try {
+      const res = await fetch(`${API_BASE}/api/appointments/${id}/status`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status }),
+        credentials: "include",
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.message || "Failed to update status");
+      // reload current page
+      await loadAppointments(apptMeta.page || 1, apptMeta.limit || 20, apptSort);
+    } catch (err) {
+      alert(err.message || "Failed to update status");
+    }
+  }
 
   const handleDeleteStaff = (id) => {
     if (window.confirm("Are you sure you want to delete this staff member?")) {
@@ -390,6 +443,13 @@ const Dashboard = ({ onLogout }) => {
                   Dashboard
                 </a>
                 <a
+                  href="#appointments"
+                  onClick={() => setSidebarOpen(false)}
+                  className="block px-4 py-3 hover:bg-indigo-800 rounded-lg transition-colors"
+                >
+                  Appointments
+                </a>
+                <a
                   href="#patients"
                   onClick={() => setSidebarOpen(false)}
                   className="block px-4 py-3 hover:bg-indigo-800 rounded-lg transition-colors"
@@ -424,6 +484,12 @@ const Dashboard = ({ onLogout }) => {
               Dashboard
             </a>
             <a
+              href="#appointments"
+              className="block px-4 py-3 hover:bg-indigo-100 hover:text-black rounded-lg transition-colors"
+            >
+              Appointments
+            </a>
+            <a
               href="#patients"
               className="block px-4 py-3 hover:bg-indigo-100 hover:text-black rounded-lg transition-colors"
             >
@@ -454,21 +520,12 @@ const Dashboard = ({ onLogout }) => {
               </h1>
             </div>
 
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setShowPatientLogin(true)}
-                className="flex items-center gap-1 md:gap-2 px-2 md:px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm md:text-base"
-              >
-                <UserPlus size={18} className="md:w-5 md:h-5" />
-                <span className="hidden sm:inline">Patient</span>
-              </button>
-              {/* Logout handled via main site header; removed internal red logout button */}
-            </div>
+            
           </div>
         </header>
 
         <main className="flex-1 overflow-y-auto p-4 md:p-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mb-6 md:mb-8">
+          <div id="overview" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mb-6 md:mb-8">
             <div className="bg-white p-4 md:p-6 rounded-xl shadow-md">
               <div className="flex items-center justify-between">
                 <div>
@@ -516,6 +573,138 @@ const Dashboard = ({ onLogout }) => {
                 </div>
               </div>
             </div>
+          </div>
+
+          {/* Appointments Section */}
+          <div id="appointments" className="bg-white rounded-xl shadow-md mb-6 md:mb-8">
+            <div className="p-4 md:p-6 border-b flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+              <h2 className="text-lg md:text-xl font-bold">Appointments</h2>
+              <div className="flex items-center gap-3">
+                <label className="text-sm text-gray-600">
+                  Sort:
+                  <select
+                    value={apptSort}
+                    onChange={(e) => setApptSort(e.target.value)}
+                    className="ml-2 px-2 py-1 border rounded-md"
+                  >
+                    <option value="-createdAt">Newest</option>
+                    <option value="createdAt">Oldest</option>
+                    <option value="-appointmentDate">Appointment Date (desc)</option>
+                    <option value="appointmentDate">Appointment Date (asc)</option>
+                  </select>
+                </label>
+              </div>
+            </div>
+
+            {apptLoading ? (
+              <div className="p-6 text-gray-500">Loading...</div>
+            ) : apptError ? (
+              <div className="p-6 text-red-600">Error: {apptError}</div>
+            ) : appointments.length > 0 ? (
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-3 md:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
+                      <th className="px-3 md:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase hidden md:table-cell">Email</th>
+                      <th className="px-3 md:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase hidden lg:table-cell">Phone</th>
+                      <th className="px-3 md:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date/Time</th>
+                      <th className="px-3 md:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Department</th>
+                      <th className="px-3 md:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                      <th className="px-3 md:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200">
+                    {appointments.map((a) => (
+                      <tr key={a._id} className="hover:bg-gray-50">
+                        <td className="px-3 md:px-6 py-4 whitespace-nowrap font-medium text-sm">{a.patientName}</td>
+                        <td className="px-3 md:px-6 py-4 whitespace-nowrap text-sm hidden md:table-cell">
+                          <a className="text-indigo-600 hover:underline inline-flex items-center gap-1" href={`mailto:${a.email}`}>
+                            <Mail className="w-4 h-4" /> {a.email}
+                          </a>
+                        </td>
+                        <td className="px-3 md:px-6 py-4 whitespace-nowrap text-sm hidden lg:table-cell">
+                          <a className="text-indigo-600 hover:underline inline-flex items-center gap-1" href={`tel:${a.phone}`}>
+                            <Phone className="w-4 h-4" /> {a.phone}
+                          </a>
+                        </td>
+                        <td className="px-3 md:px-6 py-4 whitespace-nowrap text-sm">
+                          <span className="inline-flex items-center gap-1">
+                            <CalendarDays className="w-4 h-4 text-gray-500" />
+                            {new Date(a.appointmentDate).toLocaleString()}
+                          </span>
+                        </td>
+                        <td className="px-3 md:px-6 py-4 whitespace-nowrap">
+                          <span className="px-2 md:px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">
+                            {a.department || "-"}
+                          </span>
+                        </td>
+                        <td className="px-3 md:px-6 py-4 whitespace-nowrap">
+                          <span
+                            className={`px-2 md:px-3 py-1 rounded-full text-xs capitalize ${
+                              a.status === "confirmed"
+                                ? "bg-green-100 text-green-800"
+                                : a.status === "cancelled"
+                                ? "bg-red-100 text-red-800"
+                                : a.status === "completed"
+                                ? "bg-purple-100 text-purple-800"
+                                : "bg-gray-100 text-gray-800"
+                            }`}
+                          >
+                            {a.status}
+                          </span>
+                        </td>
+                        <td className="px-3 md:px-6 py-4 whitespace-nowrap">
+                          <select
+                            value={a.status}
+                            onChange={(e) => updateAppointmentStatus(a._id, e.target.value)}
+                            className="px-2 py-1 border rounded-md text-sm"
+                          >
+                            {["pending", "confirmed", "cancelled", "completed"].map((s) => (
+                              <option key={s} value={s}>{s}</option>
+                            ))}
+                          </select>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+
+                {/* Simple pager */}
+                <div className="flex items-center gap-2 p-4">
+                  <button
+                    disabled={(apptMeta.page || 1) <= 1}
+                    onClick={() => loadAppointments((apptMeta.page || 1) - 1, apptMeta.limit || 20, apptSort)}
+                    className="px-3 py-1 border rounded-md disabled:opacity-60"
+                  >
+                    Prev
+                  </button>
+                  <span className="text-sm">
+                    Page {apptMeta.page || 1} of {apptMeta.pages || 1}
+                  </span>
+                  <button
+                    disabled={(apptMeta.page || 1) >= (apptMeta.pages || 1)}
+                    onClick={() => loadAppointments((apptMeta.page || 1) + 1, apptMeta.limit || 20, apptSort)}
+                    className="px-3 py-1 border rounded-md disabled:opacity-60"
+                  >
+                    Next
+                  </button>
+                  <span className="ml-auto text-sm">
+                    Total: <strong>{apptMeta.total || appointments.length}</strong>
+                  </span>
+                </div>
+              </div>
+            ) : (
+              <div className="p-8 md:p-12 text-center text-gray-500">
+                <CalendarDays size={40} className="mx-auto mb-4 opacity-50 md:w-12 md:h-12" />
+                <p className="text-base md:text-lg">
+                  No appointments yet
+                </p>
+                <p className="text-xs md:text-sm mt-2">
+                  Appointments booked from the website will appear here
+                </p>
+              </div>
+            )}
           </div>
 
           {(chartData.length > 0 || pieData.length > 0) && (
@@ -575,11 +764,20 @@ const Dashboard = ({ onLogout }) => {
             id="patients"
             className="bg-white rounded-xl shadow-md mb-6 md:mb-8"
           >
-            <div className="p-4 md:p-6 border-b">
+            <div className="p-4 md:p-6 border-b flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
               <h2 className="text-lg md:text-xl font-bold">
                 Currently Added Patients
               </h2>
+              <button
+                  onClick={() => setShowPatientLogin(true)}
+                  className="flex items-center gap-1 md:gap-2 px-2 md:px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm md:text-base"
+                >
+                  <UserPlus size={18} className="md:w-5 md:h-5" />
+                  <span className="hidden sm:inline">Patient</span>
+                </button>
             </div>
+
+            
             {patients.length > 0 ? (
               <div className="overflow-x-auto">
                 <table className="w-full">
