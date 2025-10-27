@@ -1,4 +1,4 @@
-import { useState, useContext, useEffect } from "react";
+import { useState, useContext, useEffect, useRef } from "react";
 import { AppContext } from "../context/AppContext";
 import { Menu } from "lucide-react";
 import Logo from "../assets/logo.png";
@@ -10,6 +10,10 @@ const Header = () => {
 
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Refs for outside click handling
+  const mobileMenuRef = useRef(null);
+  const mobileMenuButtonRef = useRef(null);
 
   // Detect admin by sessionStorage flag (set elsewhere on admin login)
   const [isAdmin, setIsAdmin] = useState(() => {
@@ -58,6 +62,52 @@ const Header = () => {
     setIsMobileMenuOpen(false);
   };
 
+  // Close mobile menu on outside click or on Escape key
+  useEffect(() => {
+    if (!isMobileMenuOpen) return;
+
+    const onPointerDown = (e) => {
+      const menuEl = mobileMenuRef.current;
+      const buttonEl = mobileMenuButtonRef.current;
+      if (!menuEl || !buttonEl) return;
+
+      const clickedInsideMenu = menuEl.contains(e.target);
+      const clickedMenuButton = buttonEl.contains(e.target);
+
+      if (!clickedInsideMenu && !clickedMenuButton) {
+        setIsMobileMenuOpen(false);
+      }
+    };
+
+    const onKeyDown = (e) => {
+      if (e.key === "Escape") {
+        setIsMobileMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("pointerdown", onPointerDown);
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [isMobileMenuOpen]);
+
+  // Close mobile menu when switching to desktop breakpoint
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 768px)");
+    const handle = (e) => {
+      if (e.matches) setIsMobileMenuOpen(false);
+    };
+    mq.addEventListener?.("change", handle);
+    // Safari fallback
+    mq.addListener?.(handle);
+    return () => {
+      mq.removeEventListener?.("change", handle);
+      mq.removeListener?.(handle);
+    };
+  }, []);
+
   return (
     <header className="bg-white shadow-sm sticky top-0 z-[1000]">
       <nav className="container mx-auto px-6 py-4 flex justify-between items-center">
@@ -73,11 +123,12 @@ const Header = () => {
 
         {/* Mobile Menu Button */}
         <button
+          ref={mobileMenuButtonRef}
           aria-expanded={isMobileMenuOpen}
           aria-controls="mobile-menu"
           id="mobile-menu-button"
           className="md:hidden text-muted focus:outline-none"
-          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          onClick={() => setIsMobileMenuOpen((v) => !v)}
         >
           <Menu className="w-6 h-6" />
         </button>
@@ -136,6 +187,7 @@ const Header = () => {
 
       {/* Mobile Menu */}
       <div
+        ref={mobileMenuRef}
         id="mobile-menu"
         className={`${isMobileMenuOpen ? "block" : "hidden"} md:hidden px-6 pb-4 space-y-2`}
       >

@@ -104,7 +104,7 @@ const Appointment = () => {
     <section id="appointment" className="py-16 md:py-24 bg-gradient-to-br from-[#3b8686]/30 via-[#0e9aa7]/20 to-[#66c2c2]/30">
       <div className="container mx-auto px-6">
           <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-extrabold text-[#f2f6f6] mb-2 tracking-tight">
+            <h2 className="text-3xl md:text-4xl font-extrabold text-[#0ac2c2] mb-2 tracking-tight">
               Book an Appointment
             </h2>
             <p className="text-lg text-gray-800 max-w-2xl mx-auto">
