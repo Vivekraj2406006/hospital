@@ -41,7 +41,7 @@ const Login = () => {
         if ((email || '').trim() === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
           try { sessionStorage.setItem('isAdmin', 'true'); } catch (e) {}
           toast.success('Admin login successful');
-          navigate('/admin');
+          navigate('/');
           return;
         }
         const { data } = await axios.post(`${backendUrl}/api/auth/login`, { email, password });

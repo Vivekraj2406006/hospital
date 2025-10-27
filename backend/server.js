@@ -11,6 +11,10 @@ import authRouter from "./routes/authRoutes.js";
 import userRouter from "./routes/userRoutes.js";
 import appointmentRouter from "./routes/appointmentRoutes.js";
 
+// NEW: patients & staff
+import patientRouter from "./routes/patientRoutes.js";
+import staffRouter from "./routes/staffRoutes.js";
+
 const app = express();
 const PORT = process.env.PORT || 8080;
 
@@ -28,6 +32,10 @@ app.use(cookieParser());
 app.use("/api/auth", authRouter);
 app.use("/api/users", userRouter);
 app.use("/api/appointments", appointmentRouter);
+
+// NEW: patients & staff
+app.use("/api/patients", patientRouter);
+app.use("/api/staff", staffRouter);
 
 // Try to connect to DB, but start server regardless so dev flows can continue.
 (async () => {
