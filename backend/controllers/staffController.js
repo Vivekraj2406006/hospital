@@ -20,9 +20,10 @@ export const createStaff = async (req, res) => {
       department,
       contact,
     });
-
+    // console.log("Created staff:", staff);
     return res.status(201).json(staff);
-  } catch (err) {
+  } catch (err) {  
+    console.error("Error creating staff:", err);
     return res.status(400).json({ message: "Failed to create staff", error: err.message });
   }
 };
@@ -33,6 +34,7 @@ export const deleteStaff = async (req, res) => {
     if (!deleted) return res.status(404).json({ message: "Staff not found" });
     return res.json({ message: "Staff deleted" });
   } catch (err) {
+  
     return res.status(400).json({ message: "Failed to delete staff", error: err.message });
   }
 };

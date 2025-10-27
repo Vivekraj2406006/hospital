@@ -70,8 +70,8 @@ const PatientLogin = ({ onClose, onPatientAdded }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl shadow-2xl p-4 md:p-6 w-full max-w-md max-h-screen overflow-y-auto">
+    <div className="fixed inset-0 bg-white bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-xl shadow-2xl p-4 md:p-6 w-full max-w-md inset-0 overflow-y-auto">
         <div className="flex items-center justify-between mb-4 md:mb-6">
           <h2 className="text-xl md:text-2xl font-bold text-gray-800">
             Add Patient
