@@ -16,7 +16,7 @@ const PORT = process.env.PORT || 8080;
 
 // Middleware
 app.use(cors({
-    origin: "http://localhost:5173",
+    origin: process.env.FRONTEND_URL || 'http://localhost:5173',
     credentials: true,
 }));
 app.use(express.json());
@@ -25,6 +25,18 @@ app.use(cookieParser());
 // Routes
 app.use("/api/auth", authRouter);
 app.use("/api/users", userRouter);
+
+// Backwards-compatible redirect routes for Google OAuth
+// Some Google Console configurations use /auth/google or /auth/google/callback
+// while our router mounts at /api/auth. Redirect legacy paths to the API routes
+app.get('/auth/google', (req, res) => {
+    const qs = new URLSearchParams(req.query).toString();
+    return res.redirect(`/api/auth/google${qs ? '?' + qs : ''}`);
+});
+app.get('/auth/google/callback', (req, res) => {
+    const qs = new URLSearchParams(req.query).toString();
+    return res.redirect(`/api/auth/google/callback${qs ? '?' + qs : ''}`);
+});
 
 // Try to connect to DB, but start server regardless so dev flows can continue.
 (async () => {
@@ -37,5 +49,7 @@ app.use("/api/users", userRouter);
 
     app.listen(PORT, () => {
         console.log(`Server is running on port ${PORT}`);
+        console.log(`FRONTEND_URL=${process.env.FRONTEND_URL || 'http://localhost:5173'}`);
+        console.log(`GOOGLE_REDIRECT_URI=${process.env.GOOGLE_REDIRECT_URI || '<not set>'}`);
     });
 })();
