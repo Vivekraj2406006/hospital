@@ -14,7 +14,7 @@ const connectDB = async () => {
             // useNewUrlParser and useUnifiedTopology are default in mongoose v6+
         });
         isConnected = true;
-        console.log("Database connected successfully");
+        // console.log("Database connected successfully");
         return true;
     } catch (error) {
         isConnected = false;

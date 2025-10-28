@@ -1,4 +1,4 @@
-import { useState, useContext } from "react";
+import { useState, useContext ,useEffect} from "react";
 import { AppContext } from "../context/AppContext";
 import { useNavigate, Link } from "react-router-dom";
 import Logo from "../assets/logo.png";
@@ -7,7 +7,7 @@ const API_BASE = import.meta.env.VITE_API_BASE || "";
 
 const initialFormState = {
   name: "",
-  email: "",
+  // email: "",
   phone: "",
   department: "",
   date: "",
@@ -24,6 +24,12 @@ const Appointment = () => {
   const { isLoggedIn, getUserData,  user } = useContext(AppContext);
 
   const navigate = useNavigate();
+    useEffect(() => {
+    // Ensure user data is loaded if logged in
+    if (isLoggedIn && typeof getUserData === "function") {
+      getUserData();
+    }
+  }, [isLoggedIn, getUserData]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -61,7 +67,7 @@ const Appointment = () => {
     }
 
     // Basic validation
-    if (!formData.name || !formData.email || !formData.phone || !formData.department || !formData.date) {
+    if (!formData.name  || !formData.phone || !formData.department || !formData.date) {
       setStatus("Please fill in all required fields.");
       setTimeout(() => setStatus(""), 4000);
       return;
@@ -72,7 +78,7 @@ const Appointment = () => {
 
     const payload = {
       patientName: formData.name.trim(),
-      email: formData.email.trim(),
+      email: user.email,
       phone: formData.phone.trim(),
       department: formData.department.trim(),
       appointmentDate,
@@ -111,7 +117,7 @@ const Appointment = () => {
       {isLoggedIn && (
       <div className="container mx-auto px-6">
           <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-extrabold text-[#48c2f3] mb-2 tracking-tight">
+            <h2 className="text-3xl md:text-4xl font-extrabold text-[#0ac2c2] mb-2 tracking-tight">
               Book an Appointment
             </h2>
             <p className="text-lg text-gray-800 max-w-2xl mx-auto">
@@ -166,25 +172,7 @@ const Appointment = () => {
               </div>
             </div>
 
-            {/* Email */}
-            <div>
-              <label htmlFor="email" className="block text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wide">Email Address</label>
-              <div className="relative">
-                <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#0e9aa7]" viewBox="0 0 24 24" fill="none" aria-hidden>
-                  <path d="M3 8.5l9 6 9-6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                  <path d="M21 19H3V6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-                <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  className="w-full pl-12 pr-4 py-3 border border-transparent rounded-xl bg-white/80 text-gray-900 placeholder-gray-500 transition shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-[#0e9aa7]/60"
-                  required
-                />
-              </div>
-            </div>
+       
 
             {/* Phone */}
             <div>
@@ -232,7 +220,7 @@ const Appointment = () => {
             </div>
 
             {/* Preferred Date */}
-            <div className="md:col-span-2">
+            <div >
               <label htmlFor="date" className="block text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wide">Preferred Date</label>
               <div className="relative">
                 <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#0e9aa7]" viewBox="0 0 24 24" fill="none" aria-hidden>
