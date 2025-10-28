@@ -2,6 +2,7 @@ import { useState, useContext } from "react";
 import { AppContext } from "../context/AppContext";
 import { Menu } from "lucide-react";
 import Logo from "../assets/logo.png";
+import { toast } from 'react-toastify';
 import { useNavigate, Link, useLocation } from "react-router-dom";
 
 const Header = () => {
@@ -66,11 +67,17 @@ const Header = () => {
             <button
               className="bg-[#10b7c6] text-white px-5 py-2 rounded-full font-medium shadow-md hover:bg-primary/90 transition cursor-pointer hover:bg-[hsl(185,85%,32%)]"
               onClick={() => {
-                navigate("/");
-                setTimeout(() => {
-                  const el = document.getElementById("appointment");
-                  if (el) el.scrollIntoView({ behavior: "smooth" });
-                }, 100);
+                if(isLoggedIn){
+                  navigate("/");
+                  setTimeout(() => {
+                    const el = document.getElementById("appointment");
+                    if (el) el.scrollIntoView({ behavior: "smooth" });
+                  }, 100);
+                }
+                else{
+                  navigate("/login");
+                  toast.error("You must login to book an appointment.");
+                }
               }}
             >
               Book Appointment

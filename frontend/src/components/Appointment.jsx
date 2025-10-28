@@ -1,6 +1,6 @@
 import { useState, useContext } from "react";
 import { AppContext } from "../context/AppContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import Logo from "../assets/logo.png";
 
 const API_BASE = import.meta.env.VITE_API_BASE || "";
@@ -84,7 +84,7 @@ const Appointment = () => {
       setSubmitting(true);
       await submitAppointment(payload);
       // Backend will send emails to both admin and user
-      setStatus("Appointment request sent successfully! A confirmation email has been sent.");
+      setStatus("Appointment request sent successfully!.");
       setFormData(initialFormState);
     } catch (err) {
       setStatus(err.message || "Failed to send appointment request. Please try again.");
@@ -96,9 +96,22 @@ const Appointment = () => {
 
   return (
     <section id="appointment" className="py-16 md:py-24 bg-gradient-to-br from-[#3b8686]/30 via-[#0e9aa7]/20 to-[#66c2c2]/30">
+      {!isLoggedIn && (
+        <div className="container mx-auto px-6">
+          <h2 className="text-3xl md:text-4xl font-extrabold text-[#48c2f3] mb-2 tracking-tight text-center">
+            Please {" "}
+            <Link
+            to="/login"
+            className="font-medium transition underline">
+               login
+            </Link> to book an appointment.
+          </h2>
+        </div>
+      )}
+      {isLoggedIn && (
       <div className="container mx-auto px-6">
           <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-extrabold text-[#f2f6f6] mb-2 tracking-tight">
+            <h2 className="text-3xl md:text-4xl font-extrabold text-[#48c2f3] mb-2 tracking-tight">
               Book an Appointment
             </h2>
             <p className="text-lg text-gray-800 max-w-2xl mx-auto">
@@ -278,7 +291,7 @@ const Appointment = () => {
             Prefer speaking to someone? Call our helpline anytime.
           </div>
         </form>
-      </div>
+      </div>)}
     </section>
   );
 };

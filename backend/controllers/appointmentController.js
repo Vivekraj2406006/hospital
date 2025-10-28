@@ -41,7 +41,7 @@ export const createAppointment = async (req, res) => {
     if (!patientName || !email || !phone || !appointmentDate) {
       return res
         .status(400)
-        .json({ message: "patientName, email, phone, and appointmentDate are required." });
+        .json({ message: "Patient Name, email, phone, and Appointment Date are required." });
     }
 
     const appointment = await appointmentModel.create({

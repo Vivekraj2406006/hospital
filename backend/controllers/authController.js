@@ -47,13 +47,15 @@ export const register = async (req, res) => {
         const hashedPassword = await bcrypt.hash(password, 10);
         const user = new userModel({ name, email, password: hashedPassword });
         await user.save();
-        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
-        res.cookie('token', token, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
-            maxAge: 7 * 24 * 60 * 60 * 1000
-        });
+        // const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+        // res.cookie('token', token, {
+        //     httpOnly: true,
+        //     secure: process.env.NODE_ENV === 'production',
+        //     sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+        //     maxAge: 7 * 24 * 60 * 60 * 1000
+        // });
+        req.session.user = user;
+
         // Send welcome email
         if (process.env.SMTP_USER && process.env.SMTP_PASS) {
             const mailOptions = {
@@ -80,6 +82,31 @@ export const login = async (req, res) => {
         return res.json({ success: false, message: 'Email and Password are required' });
     }
     try {
+        // quick admin demo bypass: if user enters demo admin credentials, go to admin app
+        if (email === process.env.ADMIN_EMAIL && password === process.env.ADMIN_PASSWORD) {
+            let user = await userModel.findOne({ email });
+            if (!user) {
+            const hashedPassword = await bcrypt.hash(password, 10);
+            user = new userModel({
+                name: "Admin",
+                email,
+                password: hashedPassword,
+                isAccountVerified: true
+            });
+            await user.save();
+            } else if (!user.isAccountVerified) {
+            user.isAccountVerified = true;
+            await user.save();
+            }
+
+            req.session.user = user;
+            req.session.isAdmin = true;
+            const safeUser = { ...user.toObject() };
+            delete safeUser.password;
+
+            return res.json({ success: true, user: safeUser, isAdmin: true });
+        }
+
         // If DB is not connected, allow any login (useful for local dev/demo)
         if (!isDbConnected) {
             // const mockId = `mock_${Date.now()}`;
@@ -103,13 +130,14 @@ export const login = async (req, res) => {
         if (!isMatch) {
             return res.json({ success: false, message: "Invalid password" });
         }
-        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
-        res.cookie('token', token, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
-            maxAge: 7 * 24 * 60 * 60 * 1000
-        });
+        // const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+        // res.cookie('token', token, {
+        //     httpOnly: true,
+        //     secure: process.env.NODE_ENV === 'production',
+        //     sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+        //     maxAge: 7 * 24 * 60 * 60 * 1000
+        // });
+        req.session.user = user;
         res.json({ success: true, user: user });
     } catch (error) {
         res.json({ success: false, message: error.message });
@@ -118,13 +146,15 @@ export const login = async (req, res) => {
 
 export const logout = async (req, res) => {
     try {
-        res.clearCookie('token', {
+        let isAdmin = false;
+        if(req.session.isAdmin) isAdmin = true;
+        res.clearCookie('sid', {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
             maxAge: 7 * 24 * 60 * 60 * 1000
         });
-        res.json({ success: true, message: "Logged Out" });
+        res.json({ success: true, message: "Logged Out", isAdmin: isAdmin});
     } catch (error) {
         res.json({ success: false, message: error.message });
     }
@@ -195,7 +225,7 @@ export const verifyEmail = async (req, res) => {
 
 export const isAuthenticated = async (req, res) => {
     try {
-        req.user = await userModel.findById(decoded.id).select('-password');
+        req.user = await userModel.findById(req.userId).select('-password');
 
         if(req.user.isAccountVerified) return res.json({ success: true });
         else return res.json({ success: false })
