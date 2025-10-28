@@ -24,7 +24,7 @@ const Login = () => {
       axios.defaults.withCredentials = true;
       if (state === "Sign Up") {
         const { data } = await axios.post(`${backendUrl}/api/auth/register`, { name, email, password });
-        if (data.success) {
+          if (data.success) {
           // Send OTP email after registration
           try {
             await axios.post(`${backendUrl}/api/auth/send-verify-otp`);
@@ -32,7 +32,8 @@ const Login = () => {
           } catch (otpError) {
             toast.error("Registered, but failed to send OTP email.");
           }
-          navigate("/verify-email");
+          // navigate to verify page and indicate coming from registration so timer starts
+          navigate("/verify-email?from=register");
         } else {
           toast.error(data.message);
         }
@@ -66,6 +67,54 @@ const Login = () => {
       }
     } catch (error) {
       toast.error(error.response?.data?.message || error.message);
+    }
+  };
+
+  const handleGoogleLogin = () => {
+    try {
+  const action = state === 'Sign Up' ? 'signup' : 'login';
+  const url = `${backendUrl}/api/auth/google?popup=1&action=${action}`;
+      const width = 600;
+      const height = 700;
+      const left = window.screenX + (window.outerWidth - width) / 2;
+      const top = window.screenY + (window.outerHeight - height) / 2.5;
+      const popup = window.open(url, 'google_oauth', `width=${width},height=${height},left=${left},top=${top}`);
+
+      const handleMessage = (event) => {
+        // Accept messages from the same origin (frontend)
+        try {
+          if (!event.data) return;
+          if (event.data.success) {
+            setIsLoggedIn(true);
+            getUserData();
+            if (popup) popup.close();
+            navigate('/');
+          } else {
+            // show error/message from popup
+            const msg = event.data.message || 'Google authentication failed';
+            toast.error(msg);
+            // If account was just created and OTP sent, navigate to verify page so user can enter OTP
+            if (/otp|verify|verification/i.test(msg)) {
+              navigate('/verify-email');
+            }
+            if (popup) popup.close();
+          }
+        } finally {
+          window.removeEventListener('message', handleMessage);
+        }
+      };
+
+      window.addEventListener('message', handleMessage);
+
+      // Cleanup if user closes popup without completing
+      const checkClosed = setInterval(() => {
+        if (!popup || popup.closed) {
+          clearInterval(checkClosed);
+          window.removeEventListener('message', handleMessage);
+        }
+      }, 500);
+    } catch (err) {
+      toast.error('Unable to open Google login');
     }
   };
 
@@ -139,6 +188,30 @@ const Login = () => {
             </button>
           </div>
         </form>
+
+        {/* Divider with OR between form and social login */}
+        <div className="flex items-center gap-3 mt-6">
+          <hr className="flex-1 border-t border-gray-200" />
+          <span className="text-sm text-gray-400 font-medium">OR</span>
+          <hr className="flex-1 border-t border-gray-200" />
+        </div>
+
+        <div className="flex items-center justify-center mt-4">
+          <button
+            onClick={handleGoogleLogin}
+            type="button"
+            className="w-full py-3 rounded-xl border border-gray-200 flex items-center justify-center gap-3 hover:shadow-md transition"
+          >
+            {/* Inline Google logo SVG (keeps bundle small and avoids adding new asset files) */}
+            <svg className="w-6 h-6" viewBox="0 0 533.5 544.3" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <path fill="#4285F4" d="M533.5 278.4c0-18.8-1.6-37-4.7-54.6H272.1v103.3h147.1c-6.3 34-25.6 62.8-54.6 82v68.1h87.9c51.3-47.2 82-116.8 82-198.8z"/>
+              <path fill="#34A853" d="M272.1 544.3c73.7 0 135.6-24.4 180.8-66.1l-87.9-68.1c-24.4 16.4-55.6 26-92.9 26-71.5 0-132.2-48.3-153.9-113.1H28.9v70.9C74.1 484.3 167.9 544.3 272.1 544.3z"/>
+              <path fill="#FBBC05" d="M118.2 323.0c-10.9-32.6-10.9-67.6 0-100.2V151.9H28.9c-39.6 77.3-39.6 169.8 0 247.1l89.3-76.0z"/>
+              <path fill="#EA4335" d="M272.1 107.7c39.9-.6 78.5 14.5 108 42.9l80.9-80.9C407.6 25.8 344.6 0 272.1 0 167.9 0 74.1 60 28.9 151.9l89.3 70.9c21.7-64.8 82.4-113.1 153.9-115.1z"/>
+            </svg>
+            <span className="text-sm font-medium">Continue with Google</span>
+          </button>
+        </div>
         <div className="flex flex-col items-center mt-6">
           <button
             onClick={() => navigate("/reset-password")}
