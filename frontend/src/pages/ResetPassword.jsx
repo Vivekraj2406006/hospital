@@ -8,6 +8,8 @@ import { Lock, Mail } from "lucide-react";
 
 const ResetPassword = () => {
   const [isOtpSent, setIsOtpSent] = useState(false);
+  const [secondsLeft, setSecondsLeft] = useState(0);
+  const [resending, setResending] = useState(false);
   const [email, setEmail] = useState("");
   const otpRef = useRef();
   const passwordRef = useRef();
@@ -23,6 +25,7 @@ const ResetPassword = () => {
         if (data.success) {
           toast.success('OTP sent to your email!');
           setIsOtpSent(true);
+          setSecondsLeft(60);
         } else {
           toast.error(data.message);
         }
@@ -41,6 +44,32 @@ const ResetPassword = () => {
       }
     } catch (error) {
       toast.error(error.response?.data?.message || error.message);
+    }
+  };
+
+  // countdown timer for resend
+  React.useEffect(() => {
+    if (secondsLeft <= 0) return;
+    const t = setTimeout(() => setSecondsLeft((s) => s - 1), 1000);
+    return () => clearTimeout(t);
+  }, [secondsLeft]);
+
+  const handleResend = async () => {
+    if (secondsLeft > 0 || resending) return;
+    try {
+      setResending(true);
+      axios.defaults.withCredentials = true;
+      const { data } = await axios.post(`${backendUrl}/api/auth/send-reset-otp`, { email });
+      if (data.success) {
+        toast.success(data.message || 'OTP resent');
+        setSecondsLeft(60);
+      } else {
+        toast.error(data.message || 'Failed to resend OTP');
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || error.message);
+    } finally {
+      setResending(false);
     }
   };
 
@@ -92,6 +121,16 @@ const ResetPassword = () => {
                   className="pl-10 pr-4 py-3 w-full rounded-xl border border-gray-200 focus:border-[#399fa8] focus:ring-2 focus:ring-[#399fa8]/20 bg-gray-50 text-gray-900 placeholder-gray-400 transition"
                   required
                 />
+              </div>
+              <div className="mt-3 flex items-center justify-between">
+                <button
+                  type="button"
+                  onClick={handleResend}
+                  disabled={secondsLeft > 0 || resending}
+                  className={`px-3 py-2 rounded-xl text-sm font-semibold shadow-md transition ${secondsLeft > 0 || resending ? 'opacity-50 cursor-not-allowed bg-gray-200 text-gray-600 border border-gray-200' : 'bg-gradient-to-r from-[#399fa8] to-[#0e9aa7] text-white hover:from-[#0e9aa7] hover:to-[#399fa8]'}`}
+                >
+                  {resending ? 'Sending...' : (secondsLeft > 0 ? `Resend OTP in ${Math.floor(secondsLeft/60)}:${(secondsLeft%60).toString().padStart(2,'0')}` : 'Resend OTP')}
+                </button>
               </div>
             </>
           )}

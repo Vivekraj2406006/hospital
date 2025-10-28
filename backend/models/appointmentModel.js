@@ -5,7 +5,7 @@ const appointmentSchema = new mongoose.Schema(
     patientName: { type: String, required: true, trim: true },
     email: { type: String, required: true, lowercase: true, trim: true },
     phone: { type: String, required: true, trim: true },
-    appointmentDate: { type: Date, required: true },
+    appointmentDate: { type: Date, required: true,},
     department: { type: String, trim: true, default: "" },
     doctor: { type: String, trim: true, default: "" },
     message: { type: String, trim: true, default: "" },
