@@ -1,5 +1,6 @@
 import { createContext, useEffect, useState } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 export const AppContext = createContext();
 
@@ -28,13 +29,18 @@ export const AppContextProvider = ({ children }) => {
   useEffect(() => {
       getUserData();
   }, []);
+  const navigate = useNavigate();
 
   const logout = async () => {
     try {
       axios.defaults.withCredentials = true;
-      await axios.post(`${backendUrl}/api/auth/logout`);
+      const { data } = await axios.post(`${backendUrl}/api/auth/logout`);
+      if(data.isAdmin){
+        sessionStorage.removeItem("isAdmin");
+      }
       setIsLoggedIn(false);
       setUser(null);
+      navigate('/');
     } catch (error) {
       // Optionally show error toast
     }

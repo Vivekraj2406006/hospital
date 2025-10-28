@@ -3,12 +3,11 @@ import userModel from '../models/userModels.js';
 
 const userAuth = async (req, res, next) => {
     try {
-        const token = req.cookies.token;
-        if (!token) {
-            return res.status(401).json({ success: false, message: 'No token, authorization denied' });
+        const session = req.session;
+        if (!session) {
+            return res.status(401).json({ success: false, message: 'No session detected, authorization denied' });
         }
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        req.userId = decoded.id;
+        req.userId = session.user._id;
         next();
     } catch (error) {
         return res.status(401).json({ success: false, message: 'Token is not valid' });
