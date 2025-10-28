@@ -39,12 +39,12 @@ const Login = () => {
         }
       } else {
         // quick admin demo bypass: if user enters demo admin credentials, go to admin app
-        if ((email || '').trim() === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
-          try { sessionStorage.setItem('isAdmin', 'true'); } catch (e) {}
-          toast.success('Admin login successful');
-          navigate('/');
-          return;
-        }
+        // if ((email || '').trim() === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
+        //   try { sessionStorage.setItem('isAdmin', 'true'); } catch (e) {}
+        //   toast.success('Admin login successful');
+        //   navigate('/admin');
+        //   return;
+        // }
         const { data } = await axios.post(`${backendUrl}/api/auth/login`, { email, password });
         if (data.success) {
             if (typeof data.isAdmin !== 'undefined' && data.isAdmin === true) {

@@ -21,10 +21,34 @@ const app = express();
 const PORT = process.env.PORT || 8080;
 
 // Middleware
+
 app.use(cors({
   origin: process.env.FRONTEND_URL || "http://localhost:5173",
   credentials: true,
 }));
+
+const MongoDBStore = connectMongoDBSession(session);
+app.use(
+  session({
+    name: "sid",
+    secret: process.env.JWT_SECRET,
+    resave: false,
+    saveUninitialized: false,
+    store: new MongoDBStore({
+      mongoUrl: process.env.MONGODB_URI,
+      collectionName: 'sessions',
+      ttl: 60 * 60 * 24 * 7
+    }),
+    cookie: {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+      maxAge: 1000 * 60 * 60 * 24 * 7,
+    }
+  })
+);
+
+
 app.use(express.json());
 app.use(cookieParser());
 
