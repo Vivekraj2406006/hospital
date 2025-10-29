@@ -7,23 +7,30 @@ import { AppContext } from '../context/AppContext';
 
 const EmailVerify = () => {
   const [otp, setOtp] = useState('');
-  const { backendUrl, getUserData } = useContext(AppContext);
+  const { backendUrl, user, getUserData } = useContext(AppContext);
   const navigate = useNavigate();
 
   const onSubmitHandler = async (e) => {
     e.preventDefault();
-    try {
-      axios.defaults.withCredentials = true;
-      const { data } = await axios.post(`${backendUrl}/api/auth/verify-account`, { otp });
-      if (data.success) {
-        toast.success('Email verified successfully!');
-        getUserData();
-        navigate('/');
-      } else {
-        toast.error(data.message);
+    getUserData();
+    if(user != null){
+      try {
+        axios.defaults.withCredentials = true;
+        const { data } = await axios.post(`${backendUrl}/api/auth/verify-account`, { otp });
+        if (data.success) {
+          toast.success('Email verified successfully!');
+          getUserData();
+          navigate('/');
+        } else {
+          toast.error(data.message);
+        }
+      } catch (error) {
+        toast.error(error.response?.data?.message || error.message);
       }
-    } catch (error) {
-      toast.error(error.response?.data?.message || error.message);
+    }
+    else{
+      navigate('/');
+      toast.error("Sorry but 10 minutes have passed but the email is not verified. Please sign up again.");
     }
   };
 

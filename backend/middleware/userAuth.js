@@ -10,7 +10,7 @@ const userAuth = async (req, res, next) => {
         req.userId = session.user._id;
         next();
     } catch (error) {
-        return res.status(401).json({ success: false, message: 'Token is not valid' });
+        return res.status(401).json({ success: false, message: 'Something went wrong!!' });
     }
 };
 

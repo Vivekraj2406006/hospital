@@ -8,7 +8,7 @@ import Logo from "../assets/logo.png";
 
 const Login = () => {
   const navigate = useNavigate();
-  const { backendUrl, isLoggedIn, getUserData } = useContext(AppContext);
+  const { backendUrl, isLoggedIn, setIsLoggedIn, getUserData, logout } = useContext(AppContext);
   const [state, setState] = useState("Login");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -36,7 +36,8 @@ const Login = () => {
           // Send OTP email after registration
           try {
             await axios.post(`${backendUrl}/api/auth/send-verify-otp`);
-            toast.success("Registered! Please check your email for OTP.");
+            axios.post(`${backendUrl}/api/users/delete-unverified-user`);
+            toast.success("Registered! Please check your email for OTP and verify within 10 minutes.");
           } catch (otpError) {
             toast.error("Registered, but failed to send OTP email.");
           }
@@ -59,13 +60,13 @@ const Login = () => {
             }
             if (!data.user.isAccountVerified) {
             // Send OTP email after registration
-            try {
-              await axios.post(`${backendUrl}/api/auth/send-verify-otp`);
-              toast.success("Verify you email for login. Please check your email for OTP.");
-            } catch (otpError) {
-              toast.error("Failed to send OTP for email verification.");
-            }
-            navigate("/verify-email");
+              try {
+                await axios.post(`${backendUrl}/api/auth/send-verify-otp`);
+                toast.success("Verify you email for login. Please check your email for OTP.");
+              } catch (otpError) {
+                toast.error("Failed to send OTP for email verification.");
+              }
+              navigate("/verify-email");
             }
             else{
               getUserData();
@@ -84,8 +85,8 @@ const Login = () => {
 
   const handleGoogleLogin = () => {
     try {
-  const action = state === 'Sign Up' ? 'signup' : 'login';
-  const url = `${backendUrl}/api/auth/google?popup=1&action=${action}`;
+      const action = state === 'Sign Up' ? 'signup' : 'login';
+      const url = `${backendUrl}/api/auth/google?popup=1&action=${action}`;
       const width = 600;
       const height = 700;
       const left = window.screenX + (window.outerWidth - width) / 2;

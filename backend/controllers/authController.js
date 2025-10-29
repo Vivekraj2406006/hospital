@@ -377,6 +377,15 @@ export const logout = async (req, res) => {
     try {
         let isAdmin = false;
         if(req.session.isAdmin) isAdmin = true;
+        if (req.session) {
+            await new Promise((resolve) => {
+                req.session.destroy((err) => {
+                    if (err) console.error('Session destroy error:', err);
+                    req.session = null;
+                    resolve();
+                });
+            });
+        }
         res.clearCookie('sid', {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
