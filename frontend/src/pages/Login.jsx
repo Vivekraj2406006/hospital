@@ -14,15 +14,23 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [loading, setLoading] = useState(false);
   // admin credentials (from Vite env if provided)
   const ADMIN_EMAIL = import.meta.env.VITE_ADMIN_EMAIL;
   const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD || 'Admin123';
 
   const onSubmitHandler = async (e) => {
     e.preventDefault();
+    setLoading(true);
     try {
       axios.defaults.withCredentials = true;
       if (state === "Sign Up") {
+        // validate confirm password matches
+        if (password !== confirmPassword) {
+          toast.error('Passwords do not match');
+          return;
+        }
         const { data } = await axios.post(`${backendUrl}/api/auth/register`, { name, email, password });
           if (data.success) {
           // Send OTP email after registration
@@ -34,19 +42,14 @@ const Login = () => {
           }
           // navigate to verify page and indicate coming from registration so timer starts
           navigate("/verify-email?from=register");
+          // clear confirm password after successful registration
+          setConfirmPassword("");
         } else {
           toast.error(data.message);
         }
       } else {
-        // quick admin demo bypass: if user enters demo admin credentials, go to admin app
-        // if ((email || '').trim() === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
-        //   try { sessionStorage.setItem('isAdmin', 'true'); } catch (e) {}
-        //   toast.success('Admin login successful');
-        //   navigate('/admin');
-        //   return;
-        // }
         const { data } = await axios.post(`${backendUrl}/api/auth/login`, { email, password });
-        if (data.success) {
+  if (data.success) {
             if (typeof data.isAdmin !== 'undefined' && data.isAdmin === true) {
               toast.success('Admin login successful');
               getUserData();
@@ -74,6 +77,8 @@ const Login = () => {
       }
     } catch (error) {
       toast.error(error.response?.data?.message || error.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -189,6 +194,28 @@ const Login = () => {
               {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
             </button>
           </div>
+          {state === "Sign Up" && (
+            <div className="relative">
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-[#399fa8] w-5 h-5" />
+              <input
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                value={confirmPassword}
+                type={showPassword ? "text" : "password"}
+                placeholder="Confirm Password"
+                className="pl-10 pr-4 py-3 w-full rounded-xl border border-gray-200 focus:border-[#399fa8] focus:ring-2 focus:ring-[#399fa8]/20 bg-gray-50 text-gray-900 placeholder-gray-400 transition"
+                required
+              />
+              <button
+                type="button"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#399fa8]"
+                onClick={() => setShowPassword((prev) => !prev)}
+                tabIndex={-1}
+                aria-label={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+              </button>
+            </div>
+          )}
           <div className="flex justify-between items-center">
             <button
               type="submit"

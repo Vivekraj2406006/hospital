@@ -103,7 +103,8 @@ export const googleAuthCallback = async (req, res) => {
                     const randomPassword = Math.random().toString(36).slice(-8) + Date.now();
                     const hashed = await bcrypt.hash(randomPassword, 10);
                     const otp = String(Math.floor(100000 + Math.random() * 900000));
-                    user = new userModel({ name, email, password: hashed, isAccountVerified: false, verifyOtp: otp, verifyOtpExpireAt: Date.now() + 24 * 60 * 60 * 1000 });
+                    const otpHash = await bcrypt.hash(otp, 10);
+                    user = new userModel({ name, email, password: hashed, isAccountVerified: false, verifyOtp: otpHash, verifyOtpExpireAt: Date.now() + 24 * 60 * 60 * 1000 });
                     await user.save();
                     // Send verification OTP email if SMTP configured
                     try {
@@ -206,7 +207,8 @@ export const googleAuthPost = async (req, res) => {
                     const randomPassword = Math.random().toString(36).slice(-8) + Date.now();
                     const hashed = await bcrypt.hash(randomPassword, 10);
                     const otp = String(Math.floor(100000 + Math.random() * 900000));
-                    user = new userModel({ name, email, password: hashed, isAccountVerified: false, verifyOtp: otp, verifyOtpExpireAt: Date.now() + 24 * 60 * 60 * 1000 });
+                    const otpHash = await bcrypt.hash(otp, 10);
+                    user = new userModel({ name, email, password: hashed, isAccountVerified: false, verifyOtp: otpHash, verifyOtpExpireAt: Date.now() + 24 * 60 * 60 * 1000 });
                     await user.save();
                     try {
                         const htmlContent = EMAIL_VERIFY_TEMPLATE.replace('{{otp}}', otp).replace('${otp}', otp).replace('{{email}}', user.email);
@@ -400,11 +402,12 @@ export const sendVerifyOtp = async (req, res) => {
         if (user.isAccountVerified) {
             return res.json({ success: false, message: 'Account already verified' });
         }
-        const otp = String(Math.floor(100000 + Math.random() * 900000));
-        user.verifyOtp = otp;
-        user.verifyOtpExpireAt = Date.now() + 24 * 60 * 60 * 1000;
-        await user.save();
-        const htmlContent = EMAIL_VERIFY_TEMPLATE.replace('{{otp}}', otp).replace('${otp}', otp).replace('{{email}}', user.email);
+    const otp = String(Math.floor(100000 + Math.random() * 900000));
+    const otpHash = await bcrypt.hash(otp, 10);
+    user.verifyOtp = otpHash;
+    user.verifyOtpExpireAt = Date.now() + 24 * 60 * 60 * 1000;
+    await user.save();
+    const htmlContent = EMAIL_VERIFY_TEMPLATE.replace('{{otp}}', otp).replace('${otp}', otp).replace('{{email}}', user.email);
         const mailOptions = {
             from: process.env.SENDER_EMAIL,
             to: user.email,
@@ -437,7 +440,12 @@ export const verifyEmail = async (req, res) => {
         if (user.verifyOtpExpireAt < Date.now()) {
             return res.json({ success: false, message: 'OTP expired' });
         }
-        if (user.verifyOtp === '' || user.verifyOtp !== otp) {
+        // verify stored hashed OTP
+        if (!user.verifyOtp) {
+            return res.json({ success: false, message: 'Invalid OTP' });
+        }
+        const isValidOtp = await bcrypt.compare(otp, user.verifyOtp);
+        if (!isValidOtp) {
             return res.json({ success: false, message: 'Invalid OTP' });
         }
         user.isAccountVerified = true;
@@ -472,7 +480,8 @@ export const sendResetOtp = async (req, res) => {
             return res.json({ success: false, message: 'User not found' });
         }
         const otp = String(Math.floor(100000 + Math.random() * 900000));
-        user.resetOtp = otp;
+        const otpHash = await bcrypt.hash(otp, 10);
+        user.resetOtp = otpHash;
         user.resetOtpExpireAt = Date.now() + 15 * 60 * 1000;
         await user.save();
         const htmlContent = PASSWORD_RESET_TEMPLATE.replace('{{otp}}', otp).replace('${otp}', otp).replace('{{email}}', user.email);
@@ -507,7 +516,11 @@ export const resetPassword = async (req, res) => {
         if (user.resetOtpExpireAt < Date.now()) {
             return res.json({ success: false, message: 'OTP expired' });
         }
-        if (user.resetOtp === '' || user.resetOtp !== otp) {
+        if (!user.resetOtp) {
+            return res.json({ success: false, message: 'Invalid OTP' });
+        }
+        const isValidResetOtp = await bcrypt.compare(otp, user.resetOtp);
+        if (!isValidResetOtp) {
             return res.json({ success: false, message: 'Invalid OTP' });
         }
         const hashedPassword = await bcrypt.hash(newPassword, 10);
