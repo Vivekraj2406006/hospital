@@ -27,18 +27,29 @@ app.use(cors({
   credentials: true,
 }));
 
+
+app.use(express.json());
+app.use(cookieParser());
+
+// Session store (must be registered before routes)
+// Use connect-mongodb-session which expects `uri` for the connection string
 const MongoDBStore = connectMongoDBSession(session);
+const store = new MongoDBStore({
+  uri: process.env.MONGODB_URI,
+  collection: 'sessions'
+});
+
+store.on('error', function(error) {
+  console.error('Session store error:', error);
+});
+
 app.use(
   session({
     name: "sid",
     secret: process.env.JWT_SECRET,
     resave: false,
     saveUninitialized: false,
-    store: new MongoDBStore({
-      mongoUrl: process.env.MONGODB_URI,
-      collectionName: 'sessions',
-      ttl: 60 * 60 * 24 * 7
-    }),
+    store: store,
     cookie: {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
@@ -47,10 +58,6 @@ app.use(
     }
   })
 );
-
-
-app.use(express.json());
-app.use(cookieParser());
 
 // Routes
 app.use("/api/auth", authRouter);
