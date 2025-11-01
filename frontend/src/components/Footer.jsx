@@ -1,6 +1,7 @@
 // src/components/Footer.jsx
 
 import { MapPin, Phone, Mail, Facebook, Twitter, Instagram, Linkedin } from 'lucide-react';
+import { FaWhatsapp } from 'react-icons/fa';
 import Logo from "../assets/logo.png";
 
 const Footer = () => {
@@ -56,6 +57,16 @@ const Footer = () => {
 
           {/* Social Media Icons */}
           <div className="flex space-x-4 mt-4 md:mt-0">
+            <a
+              href="https://wa.me/918252184675"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="SR EMERGENCY on WhatsApp"
+              className="text-gray-400 hover:text-primary-light"
+            >
+              <FaWhatsapp className="w-6 h-6" />
+            </a>
+
             <a
               href="https://www.facebook.com/share/15he22tavv/"
               target="_blank"

@@ -54,17 +54,17 @@ const About = () => {
               About SR EMERGENCY Hospital
             </h2>
             <p className="text-lg text-gray-600 mb-4">
-              Founded with a mission to provide exceptional and accessible healthcare, SR EMERGENCY Hospital has been a cornerstone of the community for over 20 years. We combine advanced technology with a human touch to ensure the best possible outcomes for our patients.
+              Founded with a mission to provide exceptional and accessible healthcare, SR EMERGENCY Hospital has been a cornerstone of the community for over 1 year. We combine advanced technology with a human touch to ensure the best possible outcomes for our patients.
             </p>
             <p className="text-lg text-gray-600 mb-8">
               Our team of dedicated professionals is committed to upholding our values of compassion, integrity, and excellence in everything we do.
             </p>
-            <a
+            {/* <a
               href="#contact"
               className="bg-[#399fa8] text-white px-8 py-3 rounded-full text-lg font-semibold shadow-lg hover:bg-[#2b7a78] transition"
             >
               Learn More
-            </a>
+            </a> */}
           </div>
         </div>
       </div>
