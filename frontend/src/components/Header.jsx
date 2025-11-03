@@ -63,7 +63,7 @@ const Header = () => {
           )}
           <li>
             <button
-              className="bg-[#10b7c6] text-white px-5 py-2 rounded-full font-medium shadow-md hover:bg-primary/90 transition"
+              className="bg-[#10b7c6] text-white px-5 py-2 rounded-full font-medium shadow-md hover:bg-primary/90 transition hover:cursor-pointer"
               onClick={() => {
                 navigate("/");
                 setTimeout(() => {
@@ -89,7 +89,7 @@ const Header = () => {
             <li>
               <button
                 onClick={logout}
-                className="ml-4 px-5 py-2 rounded-full bg-gradient-to-r from-[#399fa8] to-[#0e9aa7] text-white font-medium shadow-md hover:from-[#0e9aa7] hover:to-[#399fa8] transition"
+                className="ml-4 px-5 py-2 rounded-full bg-gradient-to-r from-[#399fa8] to-[#0e9aa7] text-white font-medium shadow-md hover:from-[#0e9aa7] hover:to-[#399fa8] transition hover:cursor-pointer"
               >
                 Logout
               </button>

@@ -15,7 +15,7 @@ export const getUser = async (req, res) => {
 
 export const deleteUnverifiedUser = (req, res) => {
   const userId = req.userId;
-  // schedule deletion after 20 seconds (demo). DON'T use res inside the callback.
+
   setTimeout(async () => {
     try {
       const user = await userModel.findById(userId).select('-password').lean();
@@ -25,6 +25,7 @@ export const deleteUnverifiedUser = (req, res) => {
       }
       if (user.isAccountVerified) {
         console.log('User verified, skipping delete', userId);
+        return;
       }
       const deleted = await userModel.findByIdAndDelete(userId);
       if (deleted){
@@ -49,5 +50,5 @@ export const deleteUnverifiedUser = (req, res) => {
     } catch (err) {
       console.error('Error deleting user in scheduled task', err);
     }
-  }, 11 * 60 * 1000);
+  }, 6 * 60 * 1000);
 };

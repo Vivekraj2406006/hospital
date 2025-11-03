@@ -12,8 +12,15 @@ const EmailVerify = () => {
 
   const onSubmitHandler = async (e) => {
     e.preventDefault();
-    getUserData();
-    if(user != null){
+    // trim and validate OTP
+    const trimmedOtp = otp.trim();
+    if (!trimmedOtp || trimmedOtp.length < 4) {
+      toast.error('Please enter a valid OTP.');
+      return;
+    }
+    setOtp(trimmedOtp);
+
+    if(user){
       try {
         axios.defaults.withCredentials = true;
         const { data } = await axios.post(`${backendUrl}/api/auth/verify-account`, { otp });
@@ -30,7 +37,7 @@ const EmailVerify = () => {
     }
     else{
       navigate('/');
-      toast.error("Sorry but 10 minutes have passed but the email is not verified. Please sign up again.");
+      toast.error("Sorry but 5 minutes have passed but the email is not verified. Please sign up again.");
     }
   };
 

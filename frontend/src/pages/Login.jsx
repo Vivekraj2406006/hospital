@@ -37,10 +37,11 @@ const Login = () => {
           try {
             await axios.post(`${backendUrl}/api/auth/send-verify-otp`);
             axios.post(`${backendUrl}/api/users/delete-unverified-user`);
-            toast.success("Registered! Please check your email for OTP and verify within 10 minutes.");
+            toast.success("Registered! Please check your email for OTP and verify within 5 minutes.");
           } catch (otpError) {
             toast.error("Registered, but failed to send OTP email.");
           }
+          getUserData();
           // navigate to verify page and indicate coming from registration so timer starts
           navigate("/verify-email?from=register");
           // clear confirm password after successful registration
@@ -50,10 +51,10 @@ const Login = () => {
         }
       } else {
         const { data } = await axios.post(`${backendUrl}/api/auth/login`, { email, password });
-  if (data.success) {
+        if (data.success) {
             if (typeof data.isAdmin !== 'undefined' && data.isAdmin === true) {
               toast.success('Admin login successful');
-              getUserData();
+              await getUserData();
               try { sessionStorage.setItem('isAdmin', 'true'); } catch (e) {}
               navigate('/admin');
               return;
@@ -93,23 +94,31 @@ const Login = () => {
       const top = window.screenY + (window.outerHeight - height) / 2.5;
       const popup = window.open(url, 'google_oauth', `width=${width},height=${height},left=${left},top=${top}`);
 
-      const handleMessage = (event) => {
-        // Accept messages from the same origin (frontend)
+      const handleMessage = async (event) => {
+        // if (event.origin !== window.location.origin && event.origin !== "http://localhost:5173") return;
         try {
           if (!event.data) return;
           if (event.data.success) {
-            setIsLoggedIn(true);
-            getUserData();
-            if (popup) popup.close();
-            navigate('/');
+            toast.success(event.data.message);
+            if(event.data.user.isAccountVerified){
+              if (popup) popup.close();
+              getUserData();
+              navigate('/');
+            }
+            else{
+              if (popup) popup.close();
+              try {
+                await axios.post(`${backendUrl}/api/auth/send-verify-otp`);
+                toast.success("Verify you email for login. Please check your email for OTP.");
+              } catch (otpError) {
+                toast.error("Failed to send OTP for email verification.");
+              }
+              navigate("/verify-email");
+            }
           } else {
             // show error/message from popup
             const msg = event.data.message || 'Google authentication failed';
             toast.error(msg);
-            // If account was just created and OTP sent, navigate to verify page so user can enter OTP
-            if (/otp|verify|verification/i.test(msg)) {
-              navigate('/verify-email');
-            }
             if (popup) popup.close();
           }
         } finally {
@@ -121,7 +130,19 @@ const Login = () => {
 
       // Cleanup if user closes popup without completing
       const checkClosed = setInterval(() => {
-        if (!popup || popup.closed) {
+        if (!popup) {
+          clearInterval(checkClosed);
+          window.removeEventListener('message', handleMessage);
+          return;
+        }
+        try {
+          // Accessing popup.closed can throw under certain COOP/CORS configurations, so guard it.
+          if (popup.closed) {
+            clearInterval(checkClosed);
+            window.removeEventListener('message', handleMessage);
+          }
+        } catch (err) {
+          // If we can't access popup.closed, assume popup is unavailable/closed and cleanup.
           clearInterval(checkClosed);
           window.removeEventListener('message', handleMessage);
         }

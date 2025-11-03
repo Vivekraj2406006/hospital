@@ -39,7 +39,7 @@ export const googleAuthRedirect = async (req, res) => {
             scope: 'openid email profile',
             access_type: 'offline',
             prompt: 'select_account',
-            state
+            state: state
         });
         const url = `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
         return res.redirect(url);
@@ -102,24 +102,27 @@ export const googleAuthCallback = async (req, res) => {
                     // create UN-verified user when signing up via Google and send OTP for verification
                     const randomPassword = Math.random().toString(36).slice(-8) + Date.now();
                     const hashed = await bcrypt.hash(randomPassword, 10);
-                    const otp = String(Math.floor(100000 + Math.random() * 900000));
-                    const otpHash = await bcrypt.hash(otp, 10);
-                    user = new userModel({ name, email, password: hashed, isAccountVerified: false, verifyOtp: otpHash, verifyOtpExpireAt: Date.now() + 24 * 60 * 60 * 1000 });
+                    user = new userModel({ name, email, password: hashed, isAccountVerified: profile.email_verified});
                     await user.save();
                     // Send verification OTP email if SMTP configured
-                    try {
-                        const htmlContent = EMAIL_VERIFY_TEMPLATE.replace('{{otp}}', otp).replace('${otp}', otp).replace('{{email}}', user.email);
-                        const mailOptions = {
-                            from: process.env.SENDER_EMAIL,
-                            to: user.email,
-                            subject: "Account verification OTP",
-                            html: htmlContent,
-                            text: `Your OTP for verifying your email is: ${otp}\nThis OTP is valid for 24 hours. Please do not share it with anyone.`
-                        };
-                        await transporter.sendMail(mailOptions);
-                    } catch (emailError) {
-                        console.error('Failed to send OTP email for Google signup', emailError);
-                    }
+                    // if(!user.isAccountVerified){
+                    //     const otp = String(Math.floor(100000 + Math.random() * 900000));
+                    //     const otpHash = await bcrypt.hash(otp, 10);
+                    //     user.verifyOtp = otpHash;
+                    //     try {
+                    //         const htmlContent = EMAIL_VERIFY_TEMPLATE.replace('{{otp}}', otp).replace('${otp}', otp).replace('{{email}}', user.email);
+                    //         const mailOptions = {
+                    //             from: process.env.SENDER_EMAIL,
+                    //             to: user.email,
+                    //             subject: "Account verification OTP",
+                    //             html: htmlContent,
+                    //             text: `Your OTP for verifying your email is: ${otp}\nThis OTP is valid for 24 hours. Please do not share it with anyone.`
+                    //         };
+                    //         await transporter.sendMail(mailOptions);
+                    //     } catch (emailError) {
+                    //         console.error('Failed to send OTP email for Google signup', emailError);
+                    //     }
+                    // }
                 } else {
                     // login attempt but no user exists
                     // respond with popup message instructing to sign up
@@ -130,29 +133,34 @@ export const googleAuthCallback = async (req, res) => {
                     return res.redirect(FRONTEND_URL || '/');
                 }
             } else {
+                action = 'login';
                 // user exists
-                if (action === 'login') {
-                    if (!user.isAccountVerified) {
-                        if (flow === 'popup') {
-                            const origin = process.env.NODE_ENV === 'production' ? (FRONTEND_URL || '') : (FRONTEND_URL || '*');
-                            return res.send(`<!doctype html><html><body><script>window.opener.postMessage({success:false,message:'Please verify your email before logging in.'}, '${origin}');window.close();</script></body></html>`);
-                        }
-                        return res.redirect(FRONTEND_URL || '/');
-                    }
+                // if (!user.isAccountVerified) {
+                //     if (flow === 'popup') {
+                //         const origin = process.env.NODE_ENV === 'production' ? (FRONTEND_URL || '') : (FRONTEND_URL || '*');
+                //         return res.send(`<!doctype html><html><body><script>window.opener.postMessage({success:false,message:'Please verify your email before logging in.'}, '${origin}');window.close();</script></body></html>`);
+                //     }
+                //     return res.redirect(FRONTEND_URL || '/');
+                // }
                     // else proceed to sign-in
-                }
                 // for signup action when user already exists, just sign them in
             }
         }
 
         // Sign server JWT and set cookie (user should now be present)
-        const token = jwt.sign({ id: user ? user._id : `mock_${Date.now()}`, email }, process.env.JWT_SECRET, { expiresIn: '7d' });
-        res.cookie('token', token, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-            maxAge: 7 * 24 * 60 * 60 * 1000
-        });
+        // const token = jwt.sign({ id: user ? user._id : `mock_${Date.now()}`, email }, process.env.JWT_SECRET, { expiresIn: '7d' });
+        // res.cookie('token', token, {
+        //     httpOnly: true,
+        //     secure: process.env.NODE_ENV === 'production',
+        //     sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+        //     maxAge: 7 * 24 * 60 * 60 * 1000
+        // });
+        req.session.user = user;
+
+        // Build a safe user object and JSON-encode it (escape '<' to avoid XSS)
+        const safeUser = user && user.toObject ? { ...user.toObject() } : user || null;
+        if (safeUser) delete safeUser.password;
+        const userJson = JSON.stringify(safeUser).replace(/</g, '\\u003c');
 
         // If popup flow, return HTML that posts message to opener and closes
         if (flow === 'popup') {
@@ -165,11 +173,11 @@ export const googleAuthCallback = async (req, res) => {
             } else {
                 origin = FRONTEND_URL || '*';
             }
-            // If this was a signup flow, user still needs to verify via OTP — notify opener
+
             if (action === 'signup') {
-                return res.send(`<!doctype html><html><body><script>window.opener.postMessage({success:false,message:'Account created. An OTP has been sent to your email for verification.'}, '${origin}');window.close();</script></body></html>`);
+                return res.send(`<!doctype html><html><body><script>window.opener.postMessage({success:true,message:'Account created', user:${userJson}}, '${origin}');window.close();</script></body></html>`);
             }
-            return res.send(`<!doctype html><html><body><script>window.opener.postMessage({success:true}, '${origin}');window.close();</script></body></html>`);
+            return res.send(`<!doctype html><html><body><script>window.opener.postMessage({success:true, user:${userJson}, message: "Successfully Logged in"}, '${origin}');window.close();</script></body></html>`);
         }
 
         // Otherwise redirect to frontend
@@ -188,71 +196,71 @@ export const googleAuthCallback = async (req, res) => {
 };
 
 // Endpoint for client to POST id_token (if using Firebase client-side)
-export const googleAuthPost = async (req, res) => {
-    try {
-        const { id_token, action } = req.body; // action: 'signup' or 'login'
-        if (!id_token) return res.json({ success: false, message: 'Missing id_token' });
-        const verifyRes = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${id_token}`);
-        const profile = await verifyRes.json();
-        if (!profile || !profile.email) return res.json({ success: false, message: 'Invalid id_token' });
-        const email = profile.email;
-        const name = profile.name || email.split('@')[0];
+// export const googleAuthPost = async (req, res) => {
+//     try {
+//         const { id_token, action } = req.body; // action: 'signup' or 'login'
+//         if (!id_token) return res.json({ success: false, message: 'Missing id_token' });
+//         const verifyRes = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${id_token}`);
+//         const profile = await verifyRes.json();
+//         if (!profile || !profile.email) return res.json({ success: false, message: 'Invalid id_token' });
+//         const email = profile.email;
+//         const name = profile.name || email.split('@')[0];
 
-        let user = null;
-        if (isDbConnected) {
-            user = await userModel.findOne({ email });
-            if (!user) {
-                if (action === 'signup') {
-                    // create UN-verified user and send OTP
-                    const randomPassword = Math.random().toString(36).slice(-8) + Date.now();
-                    const hashed = await bcrypt.hash(randomPassword, 10);
-                    const otp = String(Math.floor(100000 + Math.random() * 900000));
-                    const otpHash = await bcrypt.hash(otp, 10);
-                    user = new userModel({ name, email, password: hashed, isAccountVerified: false, verifyOtp: otpHash, verifyOtpExpireAt: Date.now() + 24 * 60 * 60 * 1000 });
-                    await user.save();
-                    try {
-                        const htmlContent = EMAIL_VERIFY_TEMPLATE.replace('{{otp}}', otp).replace('${otp}', otp).replace('{{email}}', user.email);
-                        const mailOptions = {
-                            from: process.env.SENDER_EMAIL,
-                            to: user.email,
-                            subject: "Account verification OTP",
-                            html: htmlContent,
-                            text: `Your OTP for verifying your email is: ${otp}\nThis OTP is valid for 24 hours. Please do not share it with anyone.`
-                        };
-                        await transporter.sendMail(mailOptions);
-                    } catch (emailError) {
-                        console.error('Failed to send OTP email for Google signup (POST)', emailError);
-                    }
-                } else {
-                    return res.json({ success: false, message: 'User not found. Please sign up first.' });
-                }
-            } else {
-                if (action === 'login' && !user.isAccountVerified) {
-                    return res.json({ success: false, message: 'Please verify your email before logging in.' });
-                }
-            }
-        }
-        const token = jwt.sign({ id: user ? user._id : `mock_${Date.now()}`, email }, process.env.JWT_SECRET, { expiresIn: '7d' });
-        res.cookie('token', token, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-            maxAge: 7 * 24 * 60 * 60 * 1000
-        });
-        // If this was a signup flow, instruct client to verify via OTP
-        if (action === 'signup') {
-            return res.json({ success: false, message: 'Account created. OTP sent to email for verification.' });
-        }
-        return res.json({ success: true });
-    } catch (error) {
-        return res.json({ success: false, message: error.message });
-    }
-};
+//         let user = null;
+//         if (isDbConnected) {
+//             user = await userModel.findOne({ email });
+//             if (!user) {
+//                 if (action === 'signup') {
+//                     // create UN-verified user and send OTP
+//                     const randomPassword = Math.random().toString(36).slice(-8) + Date.now();
+//                     const hashed = await bcrypt.hash(randomPassword, 10);
+//                     const otp = String(Math.floor(100000 + Math.random() * 900000));
+//                     const otpHash = await bcrypt.hash(otp, 10);
+//                     user = new userModel({ name, email, password: hashed, isAccountVerified: false, verifyOtp: otpHash, verifyOtpExpireAt: Date.now() + 24 * 60 * 60 * 1000 });
+//                     await user.save();
+//                     try {
+//                         const htmlContent = EMAIL_VERIFY_TEMPLATE.replace('{{otp}}', otp).replace('${otp}', otp).replace('{{email}}', user.email);
+//                         const mailOptions = {
+//                             from: process.env.SENDER_EMAIL,
+//                             to: user.email,
+//                             subject: "Account verification OTP",
+//                             html: htmlContent,
+//                             text: `Your OTP for verifying your email is: ${otp}\nThis OTP is valid for 24 hours. Please do not share it with anyone.`
+//                         };
+//                         await transporter.sendMail(mailOptions);
+//                     } catch (emailError) {
+//                         console.error('Failed to send OTP email for Google signup (POST)', emailError);
+//                     }
+//                 } else {
+//                     return res.json({ success: false, message: 'User not found. Please sign up first.' });
+//                 }
+//             } else {
+//                 if (action === 'login' && !user.isAccountVerified) {
+//                     return res.json({ success: false, message: 'Please verify your email before logging in.' });
+//                 }
+//             }
+//         }
+//         const token = jwt.sign({ id: user ? user._id : `mock_${Date.now()}`, email }, process.env.JWT_SECRET, { expiresIn: '7d' });
+//         res.cookie('token', token, {
+//             httpOnly: true,
+//             secure: process.env.NODE_ENV === 'production',
+//             sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+//             maxAge: 7 * 24 * 60 * 60 * 1000
+//         });
+//         // If this was a signup flow, instruct client to verify via OTP
+//         if (action === 'signup') {
+//             return res.json({ success: false, message: 'Account created. OTP sent to email for verification.' });
+//         }
+//         return res.json({ success: true });
+//     } catch (error) {
+//         return res.json({ success: false, message: error.message });
+//     }
+// };
 
 export const register = async (req, res) => {
     const { name, email, password } = req.body;
     if (!name || !email || !password) {
-        return res.json({ success: false, message: 'Missing Details' });
+        return res.json({ success: false, message: 'All the fields must be filled' });
     }
     try {
         // If DB is not connected, allow a mock registration so developers can test flows.
@@ -283,7 +291,9 @@ export const register = async (req, res) => {
         //     sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
         //     maxAge: 7 * 24 * 60 * 60 * 1000
         // });
-        req.session.user = user;
+        const safeUser = { ...user.toObject() };
+        delete safeUser.password;
+        req.session.user = safeUser;
 
         // Send welcome email
         if (process.env.SMTP_USER && process.env.SMTP_PASS) {
@@ -353,11 +363,11 @@ export const login = async (req, res) => {
 
         const user = await userModel.findOne({ email });
         if (!user) {
-            return res.json({ success: false, message: "Invalid Email" });
+            return res.json({ success: false, message: "User does not exists. Please sign up first." });
         }
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
-            return res.json({ success: false, message: "Invalid password" });
+            return res.json({ success: false, message: "Email or Password is wrong" });
         }
         // const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
         // res.cookie('token', token, {
@@ -367,7 +377,12 @@ export const login = async (req, res) => {
         //     maxAge: 7 * 24 * 60 * 60 * 1000
         // });
         req.session.user = user;
-        res.json({ success: true, user: user });
+
+        const safeUser = user && user.toObject ? { ...user.toObject() } : user || null;
+        if (safeUser) delete safeUser.password;
+        const userJson = JSON.stringify(safeUser).replace(/</g, '\\u003c');
+
+        res.json({ success: true, user: userJson });
     } catch (error) {
         res.json({ success: false, message: error.message });
     }
@@ -414,15 +429,20 @@ export const sendVerifyOtp = async (req, res) => {
     const otp = String(Math.floor(100000 + Math.random() * 900000));
     const otpHash = await bcrypt.hash(otp, 10);
     user.verifyOtp = otpHash;
-    user.verifyOtpExpireAt = Date.now() + 24 * 60 * 60 * 1000;
+    const now = new Date();
+    const secondsRemaining = Math.floor(5 * 60 - (now.getTime() - user.createdAt) / 1000);
+    const minutesRemaining = Math.floor(secondsRemaining / 60);
+    user.verifyOtpExpireAt = Date.now() + secondsRemaining * 1000;
     await user.save();
-    const htmlContent = EMAIL_VERIFY_TEMPLATE.replace('{{otp}}', otp).replace('${otp}', otp).replace('{{email}}', user.email);
+
+    
+    const htmlContent = EMAIL_VERIFY_TEMPLATE.replace('{{otp}}', otp).replace('${otp}', otp).replace('{{secondsRemaining}}', secondsRemaining - 60 * minutesRemaining).replace('{{minutesRemaining}}', minutesRemaining).replace('{{email}}', user.email);
         const mailOptions = {
             from: process.env.SENDER_EMAIL,
             to: user.email,
             subject: "Account verification OTP",
             html: htmlContent,
-            text: `Your OTP for verifying your email is: ${otp}\nThis OTP is valid for 24 hours. Please do not share it with anyone.`
+            text: `Your OTP for verifying your email is: ${otp}\nYou must verify your email within ${minutesRemaining} min ${secondsRemaining - 60 * minutesRemaining} sec. Please do not share it with anyone.`
         };
         try {
             await transporter.sendMail(mailOptions);
