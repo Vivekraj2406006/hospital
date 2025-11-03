@@ -3,7 +3,7 @@ export const EMAIL_VERIFY_TEMPLATE = `
     <h2>Email Verification</h2>
     <p>Your OTP for verifying your email is:</p>
     <h1 style="color: #4F46E5;">{{otp}}</h1>
-    <p>This OTP is valid for 24 hours. Please do not share it with anyone.</p>
+    <p>This OTP is valid for {{minutesRemaining}} min {{secondsRemaining}} sec. Please do not share it with anyone.</p>
   <p>Thank you,<br/>SR EMERGENCY Team</p>
   </div>
 `;

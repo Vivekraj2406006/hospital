@@ -259,7 +259,7 @@ const Appointment = () => {
             <button
               type="submit"
               disabled={submitting}
-              className="w-full md:w-auto inline-flex items-center justify-center gap-2 px-8 py-3 rounded-full text-lg font-semibold text-white shadow-2xl bg-gradient-to-r from-[#39bfc4] to-[#0e9aa7] hover:from-[#0e9aa7] hover:to-[#399fa8] transform hover:-translate-y-0.5 transition-all focus:outline-none focus:ring-2 focus:ring-[#0e9aa7]/60 disabled:opacity-60"
+              className="w-full md:w-auto inline-flex items-center justify-center gap-2 px-8 py-3 rounded-full text-lg font-semibold text-white shadow-2xl bg-gradient-to-r from-[#39bfc4] to-[#0e9aa7] hover:from-[#0e9aa7] hover:to-[#399fa8] transform hover:-translate-y-0.5 transition-all focus:outline-none focus:ring-2 focus:ring-[#0e9aa7]/60 disabled:opacity-60 hover:cursor-pointer"
             >
               <span>{submitting ? "Submitting..." : "Submit Request"}</span>
               {!submitting && (
