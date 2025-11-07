@@ -858,7 +858,7 @@ export default function HospitalAdminApp() {
     const checkAdmin = async () => {
       try {
         axios.defaults.withCredentials = true;
-        const { data } = await axios.get(`http://localhost:8080/api/auth/isAdmin`);
+        const { data } = await axios.get(`${API_BASE}/api/auth/isAdmin`);
         if (data.success && data.isAdmin) {
           setIsAdmin(true);
         } else {
