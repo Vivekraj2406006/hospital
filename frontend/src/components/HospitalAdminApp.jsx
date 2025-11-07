@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import axios from 'axios';
 import { useNavigate } from "react-router-dom";
 import {
   BarChart,
@@ -851,13 +852,25 @@ const Dashboard = () => {
 export default function HospitalAdminApp() {
   const navigate = useNavigate();
 
-  const [isAdmin, setIsAdmin] = useState(() => {
-    try {
-      return sessionStorage.getItem("isAdmin") === "true";
-    } catch {
-      return false;
-    }
-  });
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    const checkAdmin = async () => {
+      try {
+        axios.defaults.withCredentials = true;
+        const { data } = await axios.get(`http://localhost:8080/api/auth/isAdmin`);
+        if (data.success && data.isAdmin) {
+          setIsAdmin(true);
+        } else {
+          setIsAdmin(false);
+        }
+      } catch (e) {
+        console.error("Admin check failed:", e);
+        setIsAdmin(false);
+      }
+    };
+    checkAdmin();
+  }, []);
 
   useEffect(() => {
     if (!isAdmin) navigate("/");
@@ -874,3 +887,4 @@ export default function HospitalAdminApp() {
   if (!isAdmin) return null;
   return <Dashboard onLogout={handleLogout} />;
 }
+

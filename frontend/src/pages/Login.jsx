@@ -18,7 +18,7 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   // admin credentials (from Vite env if provided)
   const ADMIN_EMAIL = import.meta.env.VITE_ADMIN_EMAIL;
-  const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD || 'Admin123';
+  const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD;
 
   const onSubmitHandler = async (e) => {
     e.preventDefault();
@@ -63,7 +63,7 @@ const Login = () => {
             // Send OTP email after registration
               try {
                 await axios.post(`${backendUrl}/api/auth/send-verify-otp`);
-                toast.success("Verify you email for login. Please check your email for OTP.");
+                toast.success("Verify your email for login. Please check your email for OTP.");
               } catch (otpError) {
                 toast.error("Failed to send OTP for email verification.");
               }
@@ -155,9 +155,9 @@ const Login = () => {
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-linear-to-br from-[#3b8686]/30 via-[#0e9aa7]/20 to-[#66c2c2]/30 px-4">
-      {isLoggedIn && 
+      {isLoggedIn &&
       navigate('/')}
-      {!isLoggedIn && ( 
+      {!isLoggedIn && (
       <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl p-8 sm:p-12 relative z-10 border border-gray-100">
         <div className="flex flex-col items-center mb-6">
           <span className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[#399fa8]/10 mb-2">

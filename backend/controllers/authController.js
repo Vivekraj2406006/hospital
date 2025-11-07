@@ -380,9 +380,9 @@ export const login = async (req, res) => {
 
         const safeUser = user && user.toObject ? { ...user.toObject() } : user || null;
         if (safeUser) delete safeUser.password;
-        const userJson = JSON.stringify(safeUser).replace(/</g, '\\u003c');
+        // const userJson = JSON.stringify(safeUser).replace(/</g, '\\u003c');
 
-        res.json({ success: true, user: userJson });
+        res.json({ success: true, user: safeUser });
     } catch (error) {
         res.json({ success: false, message: error.message });
     }
@@ -435,7 +435,7 @@ export const sendVerifyOtp = async (req, res) => {
     user.verifyOtpExpireAt = Date.now() + secondsRemaining * 1000;
     await user.save();
 
-    
+
     const htmlContent = EMAIL_VERIFY_TEMPLATE.replace('{{otp}}', otp).replace('${otp}', otp).replace('{{secondsRemaining}}', secondsRemaining - 60 * minutesRemaining).replace('{{minutesRemaining}}', minutesRemaining).replace('{{email}}', user.email);
         const mailOptions = {
             from: process.env.SENDER_EMAIL,
@@ -561,4 +561,12 @@ export const resetPassword = async (req, res) => {
     } catch (error) {
         return res.json({ success: false, message: error.message });
     }
+};
+
+export const isAdmin = (req, res) => {
+  axios.defaults.withCredentials = true;
+  if (req.session && req.session.isAdmin) {
+    return res.json({ success: true, isAdmin: true });
+  }
+  return res.json({ success: true, isAdmin: false });
 };
