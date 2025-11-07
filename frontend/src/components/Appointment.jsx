@@ -172,7 +172,7 @@ const Appointment = () => {
               </div>
             </div>
 
-       
+
 
             {/* Phone */}
             <div>
@@ -214,6 +214,12 @@ const Appointment = () => {
                   <option value="Pediatrics">Pediatrics</option>
                   <option value="Neurology">Neurology</option>
                   <option value="Orthopedics">Orthopedics</option>
+                  <option value="Gynecology">Gynecology</option>
+                  <option value="Pharmacy">Pharmacy</option>
+                  <option value="Ultrasound">Ultrasound</option>
+                  <option value="ECG">ECG</option>
+                  <option value="X-ray">X-ray</option>
+                  <option value="Emergency Toxicology">Emergency Toxicology</option>
                   <option value="General">General Checkup</option>
                 </select>
               </div>

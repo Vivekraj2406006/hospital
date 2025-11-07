@@ -40,6 +40,7 @@ const store = new MongoDBStore({
 });
 
 store.on('error', function(error) {
+  console.log(error.message);
   console.error('Session store error:', error);
 });
 
