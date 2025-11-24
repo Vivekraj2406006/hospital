@@ -25,6 +25,7 @@ import {
   Mail,
   Phone,
 } from "lucide-react";
+import logo from '../assets/logo.png';
 
 // Backend base URL
 const API_BASE = import.meta.env.VITE_API_BASE || "";
@@ -154,66 +155,81 @@ const PatientLogin = ({ onClose, onPatientAdded }) => {
   );
 };
 
-// Login Component (unchanged demo)
+// Login Component
 const Login = ({ onLogin }) => {
-  const [email, setEmail] = useState(import.meta.env.VITE_ADMIN_EMAIL || "");
-  const [password, setPassword] = useState(import.meta.env.VITE_ADMIN_PASSWORD || "");
   const [error, setError] = useState("");
 
-  const handleSubmit = () => {
-    if (email && password) {
-      sessionStorage.setItem("isAdmin", "true");
-      onLogin();
-    } else {
-      setError("Enter email and password");
-    }
+  const handleGoogleLogin = () => {
+    setError("");
+    const width = 600;
+    const height = 700;
+    const left = window.screenX + (window.outerWidth - width) / 2;
+    const top = window.screenY + (window.outerHeight - height) / 2.5;
+    const url = `${API_BASE}/api/auth/google?popup=1&action=login`;
+    const popup = window.open(url, 'google_oauth', `width=${width},height=${height},left=${left},top=${top}`);
+
+    const handleMessage = async (event) => {
+        if (!event.data) return;
+        if (event.data.success) {
+            if (popup) popup.close();
+            window.removeEventListener('message', handleMessage);
+            onLogin(setError);
+        } else {
+             if (event.data.message) {
+                setError(event.data.message);
+            }
+            if (popup) popup.close();
+        }
+    };
+
+    window.addEventListener('message', handleMessage);
+
+    const checkClosed = setInterval(() => {
+        if (!popup || popup.closed) {
+          clearInterval(checkClosed);
+          window.removeEventListener('message', handleMessage);
+        }
+      }, 500);
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
+    <div className="min-h-screen bg-[#e0f2f1] flex items-center justify-center p-4">
+      <div className="bg-white rounded-3xl shadow-xl p-8 w-full max-w-md border border-[#b2dfdb]">
         <div className="text-center mb-8">
-          <div className="bg-indigo-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Activity className="text-white" size={32} />
+          <div className="bg-[#e0f2f1] w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-4 overflow-hidden p-2">
+            <img src={logo} alt="Hospital Logo" className="w-full h-full object-contain" />
           </div>
-          <h1 className="text-3xl font-bold text-gray-800">Hospital Admin</h1>
-          <p className="text-gray-600 mt-2">Management System</p>
+          <h1 className="text-3xl font-extrabold text-[#00695c] tracking-tight">Admin Portal</h1>
+          <p className="text-gray-600 mt-2">Secure Access Required</p>
         </div>
 
         <div className="space-y-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-              placeholder="admin@hospital.com"
-            />
-          </div>
+          {error && <div className="bg-red-50 text-red-600 p-3 rounded-xl text-sm border border-red-100">{error}</div>}
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-              placeholder="Enter password"
-            />
-          </div>
-
-          {error && <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm">{error}</div>}
-
-          <button onClick={handleSubmit} className="w-full bg-indigo-600 text-white py-3 rounded-lg font-semibold hover:bg-indigo-700 transition-colors">
-            Login
+          <button
+            onClick={handleGoogleLogin}
+            className="w-full bg-white text-gray-700 border border-gray-300 py-3.5 rounded-xl font-bold shadow-sm hover:bg-gray-50 transition-all flex items-center justify-center gap-2"
+          >
+            <svg className="w-5 h-5" viewBox="0 0 24 24">
+              <path
+                fill="#4285F4"
+                d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+              />
+              <path
+                fill="#34A853"
+                d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+              />
+              <path
+                fill="#FBBC05"
+                d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+              />
+              <path
+                fill="#EA4335"
+                d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+              />
+            </svg>
+            Login with Google
           </button>
-        </div>
-
-        <div className="mt-6 text-center text-sm text-gray-500">
-          <p>Demo Credentials:</p>
-          <p className="font-mono mt-1">admin@hospital.com / Admin123</p>
         </div>
       </div>
     </div>
@@ -221,7 +237,7 @@ const Login = ({ onLogin }) => {
 };
 
 // Dashboard with real API for Patients/Staff
-const Dashboard = () => {
+const Dashboard = ({ onLogout }) => {
   const [patients, setPatients] = useState([]);
   const [staff, setStaff] = useState([]);
   const [showAddStaff, setShowAddStaff] = useState(false);
@@ -464,6 +480,13 @@ const Dashboard = () => {
               </button>
               <h1 className="text-lg md:text-2xl font-bold text-gray-800">Admin Dashboard</h1>
             </div>
+            <button
+              onClick={onLogout}
+              className="px-4 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors font-medium text-sm flex items-center gap-2"
+            >
+              <Trash2 size={16} />
+              Logout
+            </button>
           </div>
         </header>
 
@@ -853,38 +876,55 @@ export default function HospitalAdminApp() {
   const navigate = useNavigate();
 
   const [isAdmin, setIsAdmin] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const checkAdmin = async () => {
+  const checkAdmin = async () => {
       try {
         axios.defaults.withCredentials = true;
-        const { data } = await axios.get(`http://localhost:8080/api/auth/isAdmin`);
+        const { data } = await axios.get(`${API_BASE}/api/auth/isAdmin`);
         if (data.success && data.isAdmin) {
           setIsAdmin(true);
+          return true;
         } else {
           setIsAdmin(false);
+          return false;
         }
       } catch (e) {
         console.error("Admin check failed:", e);
         setIsAdmin(false);
+        return false;
+      } finally {
+        setLoading(false);
       }
     };
+
+  useEffect(() => {
     checkAdmin();
   }, []);
 
-  useEffect(() => {
-    if (!isAdmin) navigate("/");
-  }, [isAdmin, navigate]);
+  const handleLoginSuccess = async (setLoginError) => {
+      const isNowAdmin = await checkAdmin();
+      if (!isNowAdmin) {
+          if (setLoginError) setLoginError("Access Denied: You are not an admin.");
+      }
+  };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     try {
-      sessionStorage.removeItem("isAdmin");
+      await axios.post(`${API_BASE}/api/auth/logout`);
     } catch {}
     setIsAdmin(false);
     navigate("/");
   };
 
-  if (!isAdmin) return null;
+  if (loading) {
+      return <div className="flex items-center justify-center h-screen">Loading...</div>;
+  }
+
+  if (!isAdmin) {
+      return <Login onLogin={handleLoginSuccess} />;
+  }
+
   return <Dashboard onLogout={handleLogout} />;
 }
 
