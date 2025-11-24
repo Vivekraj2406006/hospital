@@ -3,7 +3,7 @@ import { AppContext } from "../context/AppContext";
 import { useNavigate, Link } from "react-router-dom";
 import Logo from "../assets/logo.png";
 
-const API_BASE = import.meta.env.VITE_API_BASE || "";
+const API_BASE = import.meta.env.VITE_BACKEND_URL || "";
 
 const initialFormState = {
   name: "",

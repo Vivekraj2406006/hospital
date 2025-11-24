@@ -28,7 +28,7 @@ import {
 import logo from '../assets/logo.png';
 
 // Backend base URL
-const API_BASE = import.meta.env.VITE_API_BASE || "";
+const API_BASE = import.meta.env.VITE_BACKEND_URL || "";
 
 // Patient Add Modal (persists to backend)
 const PatientLogin = ({ onClose, onPatientAdded }) => {
