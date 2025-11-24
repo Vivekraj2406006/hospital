@@ -28,6 +28,7 @@ const Footer = () => {
               <li><a href="#services" className="hover:text-primary-light transition">Services</a></li>
               <li><a href="#doctors" className="hover:text-primary-light transition">Find a Doctor</a></li>
               <li><a href="#appointment" className="hover:text-primary-light transition">Appointments</a></li>
+              <li><a href="/admin" className="hover:text-primary-light transition">Admin Login</a></li>
             </ul>
           </div>
 

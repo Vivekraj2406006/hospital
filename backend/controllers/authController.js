@@ -1,25 +1,8 @@
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
 import userModel from '../models/userModels.js';
-import transporter from '../config/nodemailer.js';
-import { EMAIL_VERIFY_TEMPLATE, PASSWORD_RESET_TEMPLATE } from '../config/emailTemplate.js';
 import { isConnected as isDbConnected } from '../config/mongodb.js';
 import fetch from 'node-fetch';
-
-export const testEmail = async (req, res) => {
-    try {
-        const testMailOptions = {
-            from: process.env.SENDER_EMAIL,
-            to: process.env.SENDER_EMAIL,
-            subject: "Email Configuration Test",
-            text: "If you receive this email, your email configuration is working correctly!"
-        };
-        await transporter.sendMail(testMailOptions);
-        res.json({ success: true, message: "Test email sent successfully" });
-    } catch (error) {
-        res.json({ success: false, message: `Email configuration error: ${error.message}` });
-    }
-};
+import axios from 'axios';
 
 // Google OAuth redirect (start flow)
 export const googleAuthRedirect = async (req, res) => {
@@ -93,69 +76,56 @@ export const googleAuthCallback = async (req, res) => {
         const email = profile.email;
         const name = profile.name || profile.email.split('@')[0];
 
-        // Create or find user, but enforce verification rules depending on action
+        // Create or find user
         let user = null;
         if (isDbConnected) {
             user = await userModel.findOne({ email });
             if (!user) {
-                if (action === 'signup') {
-                    // create UN-verified user when signing up via Google and send OTP for verification
-                    const randomPassword = Math.random().toString(36).slice(-8) + Date.now();
-                    const hashed = await bcrypt.hash(randomPassword, 10);
-                    user = new userModel({ name, email, password: hashed, isAccountVerified: profile.email_verified});
-                    await user.save();
-                    // Send verification OTP email if SMTP configured
-                    // if(!user.isAccountVerified){
-                    //     const otp = String(Math.floor(100000 + Math.random() * 900000));
-                    //     const otpHash = await bcrypt.hash(otp, 10);
-                    //     user.verifyOtp = otpHash;
-                    //     try {
-                    //         const htmlContent = EMAIL_VERIFY_TEMPLATE.replace('{{otp}}', otp).replace('${otp}', otp).replace('{{email}}', user.email);
-                    //         const mailOptions = {
-                    //             from: process.env.SENDER_EMAIL,
-                    //             to: user.email,
-                    //             subject: "Account verification OTP",
-                    //             html: htmlContent,
-                    //             text: `Your OTP for verifying your email is: ${otp}\nThis OTP is valid for 24 hours. Please do not share it with anyone.`
-                    //         };
-                    //         await transporter.sendMail(mailOptions);
-                    //     } catch (emailError) {
-                    //         console.error('Failed to send OTP email for Google signup', emailError);
-                    //     }
-                    // }
-                } else {
-                    // login attempt but no user exists
-                    // respond with popup message instructing to sign up
+                if (action === 'login') {
+                    // User tries to login but does not exist
                     if (flow === 'popup') {
-                        const origin = process.env.NODE_ENV === 'production' ? (FRONTEND_URL || '') : (FRONTEND_URL || '*');
-                        return res.send(`<!doctype html><html><body><script>window.opener.postMessage({success:false,message:'User not found. Please sign up first.'}, '${origin}');window.close();</script></body></html>`);
+                        // In development allow any origin so postMessage isn't blocked by port mismatches
+                        // In production require FRONTEND_URL to be set for security
+                        let origin = '*';
+                        if (process.env.NODE_ENV === 'production') {
+                            if (!FRONTEND_URL) return res.status(500).send('Missing FRONTEND_URL');
+                            origin = FRONTEND_URL;
+                        } else {
+                            origin = FRONTEND_URL || '*';
+                        }
+                        return res.send(`<!doctype html><html><body><script>window.opener.postMessage({success:false, message: "User not found. Please sign up first."}, '${origin}');window.close();</script></body></html>`);
                     }
-                    return res.redirect(FRONTEND_URL || '/');
+                    return res.redirect(`${FRONTEND_URL || '/'}?error=user_not_found`);
                 }
+
+                // Create new user, verified by default since it's Google
+                const randomPassword = Math.random().toString(36).slice(-8) + Date.now();
+                const hashed = await bcrypt.hash(randomPassword, 10);
+                user = new userModel({ name, email, password: hashed, isAccountVerified: true });
+                await user.save();
             } else {
-                action = 'login';
-                // user exists
-                // if (!user.isAccountVerified) {
-                //     if (flow === 'popup') {
-                //         const origin = process.env.NODE_ENV === 'production' ? (FRONTEND_URL || '') : (FRONTEND_URL || '*');
-                //         return res.send(`<!doctype html><html><body><script>window.opener.postMessage({success:false,message:'Please verify your email before logging in.'}, '${origin}');window.close();</script></body></html>`);
-                //     }
-                //     return res.redirect(FRONTEND_URL || '/');
-                // }
-                    // else proceed to sign-in
-                // for signup action when user already exists, just sign them in
+                // Ensure existing user is verified if they login with Google
+                if (!user.isAccountVerified) {
+                    user.isAccountVerified = true;
+                    await user.save();
+                }
             }
         }
 
-        // Sign server JWT and set cookie (user should now be present)
-        // const token = jwt.sign({ id: user ? user._id : `mock_${Date.now()}`, email }, process.env.JWT_SECRET, { expiresIn: '7d' });
-        // res.cookie('token', token, {
-        //     httpOnly: true,
-        //     secure: process.env.NODE_ENV === 'production',
-        //     sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-        //     maxAge: 7 * 24 * 60 * 60 * 1000
-        // });
         req.session.user = user;
+
+        // Check if this is the specific admin email
+        const ADMIN_EMAIL = process.env.ADMIN_EMAIL ;
+        if (email === ADMIN_EMAIL) {
+            req.session.isAdmin = true;
+            // Set admin session to expire in 1 hour for security
+            if (req.session.cookie) {
+                req.session.cookie.maxAge = 60 * 60 * 1000;
+            }
+        } else {
+            // Ensure admin privileges are not carried over from a previous session unless explicitly handled
+            req.session.isAdmin = false;
+        }
 
         // Build a safe user object and JSON-encode it (escape '<' to avoid XSS)
         const safeUser = user && user.toObject ? { ...user.toObject() } : user || null;
@@ -174,217 +144,14 @@ export const googleAuthCallback = async (req, res) => {
                 origin = FRONTEND_URL || '*';
             }
 
-            if (action === 'signup') {
-                return res.send(`<!doctype html><html><body><script>window.opener.postMessage({success:true,message:'Account created', user:${userJson}}, '${origin}');window.close();</script></body></html>`);
-            }
             return res.send(`<!doctype html><html><body><script>window.opener.postMessage({success:true, user:${userJson}, message: "Successfully Logged in"}, '${origin}');window.close();</script></body></html>`);
         }
 
         // Otherwise redirect to frontend
-        if (action === 'signup') {
-            // append a query param so frontend can auto-start the resend timer
-            if (FRONTEND_URL) {
-                return res.redirect(`${FRONTEND_URL.replace(/\/$/, '')}/verify-email?from=google`);
-            }
-            return res.redirect('/verify-email?from=google');
-        }
         return res.redirect(FRONTEND_URL || '/');
     } catch (error) {
         console.error('googleAuthCallback error', error);
         return res.status(500).send('OAuth callback error');
-    }
-};
-
-// Endpoint for client to POST id_token (if using Firebase client-side)
-// export const googleAuthPost = async (req, res) => {
-//     try {
-//         const { id_token, action } = req.body; // action: 'signup' or 'login'
-//         if (!id_token) return res.json({ success: false, message: 'Missing id_token' });
-//         const verifyRes = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${id_token}`);
-//         const profile = await verifyRes.json();
-//         if (!profile || !profile.email) return res.json({ success: false, message: 'Invalid id_token' });
-//         const email = profile.email;
-//         const name = profile.name || email.split('@')[0];
-
-//         let user = null;
-//         if (isDbConnected) {
-//             user = await userModel.findOne({ email });
-//             if (!user) {
-//                 if (action === 'signup') {
-//                     // create UN-verified user and send OTP
-//                     const randomPassword = Math.random().toString(36).slice(-8) + Date.now();
-//                     const hashed = await bcrypt.hash(randomPassword, 10);
-//                     const otp = String(Math.floor(100000 + Math.random() * 900000));
-//                     const otpHash = await bcrypt.hash(otp, 10);
-//                     user = new userModel({ name, email, password: hashed, isAccountVerified: false, verifyOtp: otpHash, verifyOtpExpireAt: Date.now() + 24 * 60 * 60 * 1000 });
-//                     await user.save();
-//                     try {
-//                         const htmlContent = EMAIL_VERIFY_TEMPLATE.replace('{{otp}}', otp).replace('${otp}', otp).replace('{{email}}', user.email);
-//                         const mailOptions = {
-//                             from: process.env.SENDER_EMAIL,
-//                             to: user.email,
-//                             subject: "Account verification OTP",
-//                             html: htmlContent,
-//                             text: `Your OTP for verifying your email is: ${otp}\nThis OTP is valid for 24 hours. Please do not share it with anyone.`
-//                         };
-//                         await transporter.sendMail(mailOptions);
-//                     } catch (emailError) {
-//                         console.error('Failed to send OTP email for Google signup (POST)', emailError);
-//                     }
-//                 } else {
-//                     return res.json({ success: false, message: 'User not found. Please sign up first.' });
-//                 }
-//             } else {
-//                 if (action === 'login' && !user.isAccountVerified) {
-//                     return res.json({ success: false, message: 'Please verify your email before logging in.' });
-//                 }
-//             }
-//         }
-//         const token = jwt.sign({ id: user ? user._id : `mock_${Date.now()}`, email }, process.env.JWT_SECRET, { expiresIn: '7d' });
-//         res.cookie('token', token, {
-//             httpOnly: true,
-//             secure: process.env.NODE_ENV === 'production',
-//             sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-//             maxAge: 7 * 24 * 60 * 60 * 1000
-//         });
-//         // If this was a signup flow, instruct client to verify via OTP
-//         if (action === 'signup') {
-//             return res.json({ success: false, message: 'Account created. OTP sent to email for verification.' });
-//         }
-//         return res.json({ success: true });
-//     } catch (error) {
-//         return res.json({ success: false, message: error.message });
-//     }
-// };
-
-export const register = async (req, res) => {
-    const { name, email, password } = req.body;
-    if (!name || !email || !password) {
-        return res.json({ success: false, message: 'All the fields must be filled' });
-    }
-    try {
-        // If DB is not connected, allow a mock registration so developers can test flows.
-        if (!isDbConnected) {
-            // const mockId = `mock_${Date.now()}`;
-            // const token = jwt.sign({ id: mockId, email }, process.env.JWT_SECRET, { expiresIn: '7d' });
-            // res.cookie('token', token, {
-            //     httpOnly: true,
-            //     secure: process.env.NODE_ENV === 'production',
-            //     sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
-            //     maxAge: 7 * 24 * 60 * 60 * 1000
-            // });
-            // return res.json({ success: true, message: 'Registered (mock)' });
-            return res.json({success: false, message: "Something is wrong on our end. Please try again later."});
-        }
-
-        const existingUser = await userModel.findOne({ email });
-        if (existingUser) {
-            return res.json({ success: false, message: 'User already exists' });
-        }
-        const hashedPassword = await bcrypt.hash(password, 10);
-        const user = new userModel({ name, email, password: hashedPassword });
-        await user.save();
-        // const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
-        // res.cookie('token', token, {
-        //     httpOnly: true,
-        //     secure: process.env.NODE_ENV === 'production',
-        //     sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
-        //     maxAge: 7 * 24 * 60 * 60 * 1000
-        // });
-        const safeUser = { ...user.toObject() };
-        delete safeUser.password;
-        req.session.user = safeUser;
-
-        // Send welcome email
-        if (process.env.SMTP_USER && process.env.SMTP_PASS) {
-            const mailOptions = {
-                from: process.env.SENDER_EMAIL,
-                to: email,
-                subject: "Welcome to SR EMERGENCY!",
-                text: `Your account has been created with email: ${email}. But you are not verified yet.`
-            };
-            try {
-                await transporter.sendMail(mailOptions);
-            } catch (emailError) {
-                // Don't fail registration if email fails
-            }
-        }
-        res.json({ success: true });
-    } catch (error) {
-        res.json({ success: false, message: error.message });
-    }
-};
-
-export const login = async (req, res) => {
-    const { email, password } = req.body;
-    if (!email || !password) {
-        return res.json({ success: false, message: 'Email and Password are required' });
-    }
-    try {
-        // quick admin demo bypass: if user enters demo admin credentials, go to admin app
-        if (email === process.env.ADMIN_EMAIL && password === process.env.ADMIN_PASSWORD) {
-            let user = await userModel.findOne({ email });
-            if (!user) {
-            const hashedPassword = await bcrypt.hash(password, 10);
-            user = new userModel({
-                name: "Admin",
-                email,
-                password: hashedPassword,
-                isAccountVerified: true
-            });
-            await user.save();
-            } else if (!user.isAccountVerified) {
-            user.isAccountVerified = true;
-            await user.save();
-            }
-
-            req.session.user = user;
-            req.session.isAdmin = true;
-            const safeUser = { ...user.toObject() };
-            delete safeUser.password;
-
-            return res.json({ success: true, user: safeUser, isAdmin: true });
-        }
-
-        // If DB is not connected, allow any login (useful for local dev/demo)
-        if (!isDbConnected) {
-            // const mockId = `mock_${Date.now()}`;
-            // const token = jwt.sign({ id: mockId, email }, process.env.JWT_SECRET, { expiresIn: '7d' });
-            // res.cookie('token', token, {
-            //     httpOnly: true,
-            //     secure: process.env.NODE_ENV === 'production',
-            //     sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
-            //     maxAge: 7 * 24 * 60 * 60 * 1000
-            // });
-            // return res.json({ success: true, message: 'Logged in (mock)' });
-            return res.json({success: false, message: "Something went wrong on our end. Please try again later."});
-
-        }
-
-        const user = await userModel.findOne({ email });
-        if (!user) {
-            return res.json({ success: false, message: "User does not exists. Please sign up first." });
-        }
-        const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) {
-            return res.json({ success: false, message: "Email or Password is wrong" });
-        }
-        // const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
-        // res.cookie('token', token, {
-        //     httpOnly: true,
-        //     secure: process.env.NODE_ENV === 'production',
-        //     sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
-        //     maxAge: 7 * 24 * 60 * 60 * 1000
-        // });
-        req.session.user = user;
-
-        const safeUser = user && user.toObject ? { ...user.toObject() } : user || null;
-        if (safeUser) delete safeUser.password;
-        // const userJson = JSON.stringify(safeUser).replace(/</g, '\\u003c');
-
-        res.json({ success: true, user: safeUser });
-    } catch (error) {
-        res.json({ success: false, message: error.message });
     }
 };
 
@@ -413,80 +180,6 @@ export const logout = async (req, res) => {
     }
 };
 
-export const sendVerifyOtp = async (req, res) => {
-    try {
-        const userId = req.userId;
-        if (!userId) {
-            return res.json({ success: false, message: 'UserID not possible' });
-        }
-        const user = await userModel.findById(userId).select('-password');
-        if (!user) {
-            return res.json({ success: false, message: 'User not found' });
-        }
-        if (user.isAccountVerified) {
-            return res.json({ success: false, message: 'Account already verified' });
-        }
-    const otp = String(Math.floor(100000 + Math.random() * 900000));
-    const otpHash = await bcrypt.hash(otp, 10);
-    user.verifyOtp = otpHash;
-    const now = new Date();
-    const secondsRemaining = Math.floor(5 * 60 - (now.getTime() - user.createdAt) / 1000);
-    const minutesRemaining = Math.floor(secondsRemaining / 60);
-    user.verifyOtpExpireAt = Date.now() + secondsRemaining * 1000;
-    await user.save();
-
-
-    const htmlContent = EMAIL_VERIFY_TEMPLATE.replace('{{otp}}', otp).replace('${otp}', otp).replace('{{secondsRemaining}}', secondsRemaining - 60 * minutesRemaining).replace('{{minutesRemaining}}', minutesRemaining).replace('{{email}}', user.email);
-        const mailOptions = {
-            from: process.env.SENDER_EMAIL,
-            to: user.email,
-            subject: "Account verification OTP",
-            html: htmlContent,
-            text: `Your OTP for verifying your email is: ${otp}\nYou must verify your email within ${minutesRemaining} min ${secondsRemaining - 60 * minutesRemaining} sec. Please do not share it with anyone.`
-        };
-        try {
-            await transporter.sendMail(mailOptions);
-            res.json({ success: true, message: "Verification OTP sent on email" });
-        } catch (emailError) {
-            res.json({ success: false, message: "Failed to send verification email" });
-        }
-    } catch (error) {
-        res.json({ success: false, message: error.message });
-    }
-};
-
-export const verifyEmail = async (req, res) => {
-    try {
-        const { otp } = req.body;
-        const userId = req.userId;
-        if (!userId || !otp) {
-            return res.json({ success: false, message: 'Missing Details' });
-        }
-        const user = await userModel.findById(userId);
-        if (!user) {
-            return res.json({ success: false, message: 'User not found' });
-        }
-        if (user.verifyOtpExpireAt < Date.now()) {
-            return res.json({ success: false, message: 'OTP expired' });
-        }
-        // verify stored hashed OTP
-        if (!user.verifyOtp) {
-            return res.json({ success: false, message: 'Invalid OTP' });
-        }
-        const isValidOtp = await bcrypt.compare(otp, user.verifyOtp);
-        if (!isValidOtp) {
-            return res.json({ success: false, message: 'Invalid OTP' });
-        }
-        user.isAccountVerified = true;
-        user.verifyOtp = '';
-        user.verifyOtpExpireAt = 0;
-        await user.save();
-        return res.json({ success: true, message: 'Email Verified Successfully' });
-    } catch (error) {
-        return res.json({ success: false, message: error.message });
-    }
-};
-
 export const isAuthenticated = async (req, res) => {
     try {
         req.user = await userModel.findById(req.userId).select('-password');
@@ -495,71 +188,6 @@ export const isAuthenticated = async (req, res) => {
         else return res.json({ success: false })
     } catch (error) {
         res.json({ success: false, message: error.message });
-    }
-};
-
-export const sendResetOtp = async (req, res) => {
-    const { email } = req.body;
-    if (!email) {
-        return res.json({ success: false, message: 'Email is required' });
-    }
-    try {
-        const user = await userModel.findOne({ email });
-        if (!user) {
-            return res.json({ success: false, message: 'User not found' });
-        }
-        const otp = String(Math.floor(100000 + Math.random() * 900000));
-        const otpHash = await bcrypt.hash(otp, 10);
-        user.resetOtp = otpHash;
-        user.resetOtpExpireAt = Date.now() + 15 * 60 * 1000;
-        await user.save();
-        const htmlContent = PASSWORD_RESET_TEMPLATE.replace('{{otp}}', otp).replace('${otp}', otp).replace('{{email}}', user.email);
-        const mailOptions = {
-            from: process.env.SENDER_EMAIL,
-            to: user.email,
-            subject: "Password Reset OTP",
-            html: htmlContent,
-            text: `Your OTP for resetting your password is: ${otp}\nThis OTP is valid for 15 minutes. Please do not share it with anyone.`
-        };
-        try {
-            await transporter.sendMail(mailOptions);
-            return res.json({ success: true, message: "Reset OTP sent on email" });
-        } catch (emailError) {
-            return res.json({ success: false, message: "Failed to send password reset email" });
-        }
-    } catch (error) {
-        res.json({ success: false, message: error.message });
-    }
-};
-
-export const resetPassword = async (req, res) => {
-    const { email, otp, newPassword } = req.body;
-    if (!email || !otp || !newPassword) {
-        return res.json({ success: false, message: 'Require email, otp and newPassword' });
-    }
-    try {
-        const user = await userModel.findOne({ email });
-        if (!user) {
-            return res.json({ success: false, message: 'User not found' });
-        }
-        if (user.resetOtpExpireAt < Date.now()) {
-            return res.json({ success: false, message: 'OTP expired' });
-        }
-        if (!user.resetOtp) {
-            return res.json({ success: false, message: 'Invalid OTP' });
-        }
-        const isValidResetOtp = await bcrypt.compare(otp, user.resetOtp);
-        if (!isValidResetOtp) {
-            return res.json({ success: false, message: 'Invalid OTP' });
-        }
-        const hashedPassword = await bcrypt.hash(newPassword, 10);
-        user.password = hashedPassword;
-        user.resetOtp = '';
-        user.resetOtpExpireAt = 0;
-        await user.save();
-        return res.json({ success: true, message: 'Password reset successfully' });
-    } catch (error) {
-        return res.json({ success: false, message: error.message });
     }
 };
 

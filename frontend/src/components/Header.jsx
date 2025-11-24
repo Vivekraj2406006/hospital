@@ -7,7 +7,7 @@ import { useNavigate, Link } from "react-router-dom";
 const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const { isLoggedIn, logout } = useContext(AppContext);
+  const { isLoggedIn, logout, user } = useContext(AppContext);
   const navigate = useNavigate();
 
   const handleNavigation = (item) => {
@@ -90,14 +90,17 @@ const Header = () => {
             <li>
               <Link
                 to="/login"
-                className="ml-2 xl:ml-4 px-4 xl:px-5 py-2 rounded-full bg-gradient-to-r from-[#399fa8] to-[#0e9aa7] text-white font-medium shadow-md hover:from-[#0e9aa7] hover:to-[#399fa8] transition text-sm xl:text-base"
+                className="px-4 xl:px-5 py-2 rounded-full bg-gradient-to-r from-[#399fa8] to-[#0e9aa7] text-white font-medium shadow-md hover:from-[#0e9aa7] hover:to-[#399fa8] transition text-sm xl:text-base"
               >
                 Login
               </Link>
             </li>
           )}
           {isLoggedIn && (
-            <li>
+            <li className="flex items-center gap-4">
+              <div className="hidden md:flex flex-col items-end">
+                <span className="text-sm font-semibold text-gray-700">Hello, {user ? user.name : 'User'}</span>
+              </div>
               <button
                 onClick={logout}
                 className="ml-2 xl:ml-4 px-4 xl:px-5 py-2 rounded-full bg-gradient-to-r from-[#399fa8] to-[#0e9aa7] text-white font-medium shadow-md hover:from-[#0e9aa7] hover:to-[#399fa8] transition hover:cursor-pointer text-sm xl:text-base"
