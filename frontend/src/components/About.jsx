@@ -1,22 +1,8 @@
 import Logo from "../assets/logo.png";
-import React, { useState, useEffect } from "react";
-import img1 from "../assets/img1.jpg";
-import img2 from "../assets/img2.jpg";
-import img3 from "../assets/img3.jpg";
-import img4 from "../assets/img4.jpg";
+import React from "react";
 import img5 from "../assets/img5.jpg";
 
-const images = [img1, img2, img3, img4, img5];
-
 const About = () => {
-  const [current, setCurrent] = useState(0);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrent((prev) => (prev + 1) % images.length);
-    }, 3000);
-    return () => clearInterval(interval);
-  }, []);
 
   return (
     <section
@@ -25,10 +11,10 @@ const About = () => {
     >
       <div className="container mx-auto px-6">
         <div className="flex flex-col lg:flex-row items-center gap-12">
-          {/* Image Carousel */}
+          {/* Image Section */}
           <div className="lg:w-1/2 flex justify-center items-center relative">
             <img
-              src={images[current]}
+              src={img5}
               alt="Hospital Facility"
               className="w-full h-auto rounded-3xl shadow-2xl border-4 border-[#399fa8]/20 transition-all duration-700"
               onError={(e) => {
@@ -36,17 +22,6 @@ const About = () => {
                   'https://placehold.co/600x400/e0e0e0/b0b0b0?text=Image+Not+Available';
               }}
             />
-            {/* Dots navigation */}
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
-              {images.map((_, idx) => (
-                <button
-                  key={idx}
-                  className={`w-3 h-3 rounded-full border border-[#399fa8] ${current === idx ? 'bg-[#399fa8]' : 'bg-white'}`}
-                  onClick={() => setCurrent(idx)}
-                  aria-label={`Go to image ${idx + 1}`}
-                />
-              ))}
-            </div>
           </div>
           {/* Text Section */}
           <div className="lg:w-1/2">

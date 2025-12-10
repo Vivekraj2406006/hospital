@@ -13,6 +13,7 @@ import Login from './pages/Login';
 import HospitalAdminApp from './components/HospitalAdminApp';
 import ProtectedRoute from './components/ProtectedRoute';
 import ScrollToTop from './components/ScrollToTop';
+import RevealOnScroll from './components/RevealOnScroll';
 
 function App() {
   return (
@@ -26,11 +27,21 @@ function App() {
           <>
             <main>
               <Hero />
-              <Services />
-              <About />
-              <Doctors />
-              <Appointment />
-              <Locations />
+              <RevealOnScroll>
+                <Services />
+              </RevealOnScroll>
+              <RevealOnScroll>
+                <About />
+              </RevealOnScroll>
+              <RevealOnScroll>
+                <Doctors />
+              </RevealOnScroll>
+              <RevealOnScroll>
+                <Appointment />
+              </RevealOnScroll>
+              <RevealOnScroll>
+                <Locations />
+              </RevealOnScroll>
             </main>
             <Footer />
           </>

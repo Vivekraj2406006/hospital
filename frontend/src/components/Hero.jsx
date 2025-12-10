@@ -1,22 +1,43 @@
 // src/components/Hero.jsx
 
 import { useState, useEffect } from 'react';
+import img1 from "../assets/img1.jpg";
+import img2 from "../assets/img2.jpg";
+import img3 from "../assets/img3.jpg";
+import img4 from "../assets/img4.jpg";
+import img5 from "../assets/img5.jpg";
+import heroo from "../assets/heroo.jpg";
 
 const slides = [
   {
-    src: "https://placehold.co/1600x900/3b8686/ffffff?text=Modern+Hospital+Lobby",
-    alt: "Modern Hospital Lobby",
+    src: heroo,
+    alt: "Hospital Hero Image",
+    fallback: "https://placehold.co/1600x900/e0e0e0/b0b0b0?text=Hero+Image"
+  },
+  {
+    src: img1,
+    alt: "Hospital Facility 1",
     fallback: "https://placehold.co/1600x900/e0e0e0/b0b0b0?text=Image+1"
   },
   {
-    src: "https://placehold.co/1600x900/0e9aa7/ffffff?text=Expert+Surgical+Team",
-    alt: "Expert Surgical Team",
+    src: img2,
+    alt: "Hospital Facility 2",
     fallback: "https://placehold.co/1600x900/e0e0e0/b0b0b0?text=Image+2"
   },
   {
-    src: "https://placehold.co/1600x900/66c2c2/0f3b3b?text=SR+EMERGENCY+HOSPITAL",
-    alt: "SR EMERGENCY HOSPITAL",
+    src: img3,
+    alt: "Hospital Facility 3",
     fallback: "https://placehold.co/1600x900/e0e0e0/b0b0b0?text=Image+3"
+  },
+  {
+    src: img4,
+    alt: "Hospital Facility 4",
+    fallback: "https://placehold.co/1600x900/e0e0e0/b0b0b0?text=Image+4"
+  },
+  {
+    src: img5,
+    alt: "Hospital Facility 5",
+    fallback: "https://placehold.co/1600x900/e0e0e0/b0b0b0?text=Image+5"
   }
 ];
 
@@ -59,8 +80,9 @@ const Hero = () => {
         ))}
       </div>
 
-      {/* Colorful Overlay */}
-      <div className="absolute inset-0 bg-linear-to-r from-[#3b8686]/90 via-[#0e9aa7]/85 to-[#66c2c2]/80 z-10 w-full h-full"></div>
+      {/* Colorful Overlay removed */}
+      {/* <div className="absolute inset-0 bg-linear-to-r from-[#3b8686]/90 via-[#0e9aa7]/85 to-[#66c2c2]/80 z-10 w-full h-full"></div> */}
+      <div className="absolute inset-0 bg-black/20 z-10 w-full h-full"></div>
 
       {/* Content */}
       <div className="absolute inset-0 w-full h-full flex flex-col justify-center items-start px-4 sm:px-6 text-white z-20">
