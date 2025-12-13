@@ -45,6 +45,7 @@ const Login = () => {
 
       // message handler (do NOT remove listener unconditionally)
       const handleMessage = async (event) => {
+        console.log(event);
         // Validate origin first
         if (event.origin !== expectedOrigin) return;
 

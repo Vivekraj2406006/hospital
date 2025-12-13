@@ -112,7 +112,11 @@ export const googleAuthCallback = async (req, res) => {
             }
         }
 
-        req.session.user = user;
+        try{
+            req.session.user = user;
+        }catch (e){
+            console.log(e);
+        }
 
         // Check if this is the specific admin email
         const ADMIN_EMAIL = process.env.ADMIN_EMAIL ;
