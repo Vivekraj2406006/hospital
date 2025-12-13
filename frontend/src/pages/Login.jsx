@@ -41,7 +41,7 @@ const Login = () => {
       // Expected origin for postMessage validation: use your frontend origin.
       // In dev this will typically be window.location.origin. If your server uses a different FRONTEND_URL
       // make sure backend uses the same origin when calling postMessage.
-      const expectedOrigin = window.location.origin;
+      const expectedOrigin = backendUrl;
 
       // message handler (do NOT remove listener unconditionally)
       const handleMessage = async (event) => {
