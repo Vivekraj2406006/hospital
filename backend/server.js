@@ -20,6 +20,9 @@ import staffRouter from "./routes/staffRoutes.js";
 const app = express();
 const PORT = process.env.PORT || 8080;
 
+// Trust proxy - required for secure cookies behind reverse proxies (Render, Heroku, etc.)
+app.set('trust proxy', 1);
+
 // Middleware
 
 app.use(cors({
