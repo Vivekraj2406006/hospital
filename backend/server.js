@@ -49,6 +49,29 @@ store.on('error', function(error) {
   console.error('Session store error:', error);
 });
 
+// Helper to extract root domain for cookie sharing across subdomains
+// e.g., "api.mydomain.com" -> ".mydomain.com"
+const getCookieDomain = () => {
+  if (process.env.NODE_ENV !== 'production') return undefined;
+  const frontendUrl = process.env.FRONTEND_URL;
+  if (!frontendUrl) return undefined;
+  try {
+    const hostname = new URL(frontendUrl).hostname;
+    // If it's localhost or IP, don't set domain
+    if (hostname === 'localhost' || /^\d+\.\d+\.\d+\.\d+$/.test(hostname)) {
+      return undefined;
+    }
+    // Extract root domain (e.g., "www.example.com" -> ".example.com")
+    const parts = hostname.split('.');
+    if (parts.length >= 2) {
+      return '.' + parts.slice(-2).join('.');
+    }
+    return undefined;
+  } catch {
+    return undefined;
+  }
+};
+
 app.use(
   session({
     name: "sid",
@@ -59,8 +82,10 @@ app.use(
     cookie: {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: process.env.NODE_ENV === "production" ? "lax" : "strict",
+      sameSite: "lax",
       maxAge: 1000 * 60 * 60 * 24 * 7,
+      // Set domain to allow cookie sharing across subdomains (api.domain.com <-> domain.com)
+      domain: getCookieDomain(),
     }
   })
 );

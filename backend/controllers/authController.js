@@ -159,6 +159,26 @@ export const googleAuthCallback = async (req, res) => {
     }
 };
 
+// Helper to extract root domain for cookie sharing across subdomains
+const getCookieDomain = () => {
+  if (process.env.NODE_ENV !== 'production') return undefined;
+  const frontendUrl = process.env.FRONTEND_URL;
+  if (!frontendUrl) return undefined;
+  try {
+    const hostname = new URL(frontendUrl).hostname;
+    if (hostname === 'localhost' || /^\d+\.\d+\.\d+\.\d+$/.test(hostname)) {
+      return undefined;
+    }
+    const parts = hostname.split('.');
+    if (parts.length >= 2) {
+      return '.' + parts.slice(-2).join('.');
+    }
+    return undefined;
+  } catch {
+    return undefined;
+  }
+};
+
 export const logout = async (req, res) => {
     try {
         let isAdmin = false;
@@ -175,8 +195,8 @@ export const logout = async (req, res) => {
         res.clearCookie('sid', {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
-            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
-            maxAge: 7 * 24 * 60 * 60 * 1000
+            sameSite: 'lax',
+            domain: getCookieDomain(),
         });
         res.json({ success: true, message: "Logged Out", isAdmin: isAdmin});
     } catch (error) {
